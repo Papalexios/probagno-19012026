@@ -285,8 +285,13 @@ export function useSeedProducts() {
 
   return useMutation({
     mutationFn: async () => {
-      // Convert all initial products to database format
-      const dbProducts = initialProducts.map((p) => toDbProduct(p));
+      // Convert all initial products to database format (omit the non-UUID id, let DB generate)
+      const dbProducts = initialProducts.map((p) => {
+        const dbProduct = toDbProduct(p);
+        // Remove the string ID - let Supabase generate a proper UUID
+        const { id, ...productWithoutId } = dbProduct;
+        return productWithoutId;
+      });
       
       // Insert products one by one to handle duplicates gracefully
       for (const product of dbProducts) {
@@ -299,9 +304,8 @@ export function useSeedProducts() {
         }
       }
 
-      // Seed categories too
+      // Seed categories too (also let DB generate UUIDs)
       const dbCategories = initialCategories.map((c) => ({
-        id: c.id,
         name: c.name,
         name_en: c.nameEn,
         slug: c.slug,
