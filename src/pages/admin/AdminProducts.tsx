@@ -243,32 +243,45 @@ interface ProductEditDialogProps {
 
 function ProductEditDialog({ product, open, onClose, onSave }: ProductEditDialogProps) {
   const { categories } = useProductStore();
-  const defaultFormData = {
+  
+  const getDefaultFormData = () => ({
     name: '',
     nameEn: '',
     slug: '',
     description: '',
     descriptionEn: '',
     category: 'cabinet',
+    subcategory: '',
     basePrice: 0,
-    images: [],
+    salePrice: undefined,
+    images: [] as { id: string; url: string; alt: string; isPrimary: boolean }[],
     dimensions: [{ id: 'dim-1', width: 60, height: 45, depth: 40, price: 0, sku: '' }],
-    materials: [],
-    colors: [],
-    features: [],
+    materials: [] as string[],
+    colors: [] as string[],
+    features: [] as string[],
     inStock: true,
     featured: false,
     bestSeller: false,
-  };
+  });
   
-  const [formData, setFormData] = useState<Partial<Product>>(product || defaultFormData);
+  const [formData, setFormData] = useState<Partial<Product>>(getDefaultFormData());
 
-  // Reset form when opening for new product or changing product
+  // CRITICAL: Reset form data when product changes or dialog opens
   useEffect(() => {
-    if (product) {
-      setFormData(product);
-    } else if (open) {
-      setFormData(defaultFormData);
+    if (open) {
+      if (product) {
+        // Deep clone the product to avoid mutating the original
+        setFormData({
+          ...product,
+          images: [...(product.images || [])],
+          dimensions: [...(product.dimensions || [])],
+          materials: [...(product.materials || [])],
+          colors: [...(product.colors || [])],
+          features: [...(product.features || [])],
+        });
+      } else {
+        setFormData(getDefaultFormData());
+      }
     }
   }, [product, open]);
 
@@ -276,13 +289,32 @@ function ProductEditDialog({ product, open, onClose, onSave }: ProductEditDialog
     e.preventDefault();
     const now = new Date().toISOString();
     const slug = formData.slug || formData.name?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || '';
-    onSave({
+    
+    // Ensure all required fields are present
+    const completeProduct: Product = {
       id: product?.id || `prod-${Date.now()}`,
+      name: formData.name || '',
+      nameEn: formData.nameEn || '',
+      slug,
+      description: formData.description || '',
+      descriptionEn: formData.descriptionEn || '',
+      category: formData.category || 'cabinet',
+      subcategory: formData.subcategory,
+      basePrice: formData.basePrice || 0,
+      salePrice: formData.salePrice,
+      images: formData.images || [],
+      dimensions: formData.dimensions || [],
+      materials: formData.materials || [],
+      colors: formData.colors || [],
+      features: formData.features || [],
+      inStock: formData.inStock ?? true,
+      featured: formData.featured ?? false,
+      bestSeller: formData.bestSeller ?? false,
       createdAt: product?.createdAt || now,
       updatedAt: now,
-      slug,
-      ...formData,
-    } as Product);
+    };
+    
+    onSave(completeProduct);
   };
 
   return (
