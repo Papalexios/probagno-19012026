@@ -5,6 +5,7 @@ import { Menu, X, ShoppingBag, Search, Phone, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/store/cartStore';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/Logo';
 
 const navigation = [
   { name: 'Αρχική', href: '/' },
@@ -84,21 +85,7 @@ export function Header() {
             isScrolled ? "h-16" : "h-18 sm:h-20"
           )}>
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary flex items-center justify-center shadow-lg"
-              >
-                <span className="text-primary-foreground font-display font-bold text-lg sm:text-xl">PB</span>
-              </motion.div>
-              <div className="hidden sm:block">
-                <h1 className="font-display text-lg sm:text-xl font-semibold tracking-tight group-hover:text-primary transition-colors">
-                  PROBAGNO
-                </h1>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Since 1974</p>
-              </div>
-            </Link>
+            <Logo size="md" showTagline={!isScrolled} />
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1">

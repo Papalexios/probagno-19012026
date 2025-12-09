@@ -25,7 +25,28 @@ export default function AdminCategories() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const getProductCount = (slug: string) => {
-    return products.filter(p => p.category === slug).length;
+    // Use tags for category counting to match the filtering system
+    const tagMap: Record<string, string> = {
+      'led-mirrors': 'Καθρέπτης LED',
+      'mirror-cabinets': 'Καθρέπτης με ντουλάπι',
+      'bathroom-columns': 'Κολώνα μπάνιου',
+      'metal-bases': 'Μεταλλική βάση',
+      'cabinets': 'Ντουλάπι',
+      'drawers': 'Συρτάρι',
+      'all': 'all'
+    };
+    
+    const tagToMatch = tagMap[slug];
+    
+    if (slug === 'all') {
+      return products.length;
+    }
+    
+    if (!tagToMatch) {
+      return products.filter(p => p.category === slug).length;
+    }
+    
+    return products.filter(p => p.tags?.includes(tagToMatch)).length;
   };
 
   const handleSave = (category: Category) => {

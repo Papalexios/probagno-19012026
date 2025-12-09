@@ -292,50 +292,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Bank Accounts */}
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <Building2 className="w-12 h-12 mx-auto text-primary mb-4" />
-            <h2 className="font-display text-3xl font-bold mb-4">
-              Συνεργαζόμενες Τράπεζες
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Για τις πληρωμές σας μπορείτε να χρησιμοποιήσετε τους παρακάτω τραπεζικούς λογαριασμούς
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            {bankAccounts.map((account, index) => (
-              <motion.div
-                key={account.bank}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-background p-6 rounded-xl border border-border"
-              >
-                <h3 className="font-semibold text-lg mb-3 text-primary">{account.bank}</h3>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Αρ. Λογαριασμού: </span>
-                    <span className="font-mono">{account.account}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">IBAN: </span>
-                    <span className="font-mono text-xs">{account.iban}</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
     </Layout>
   );
 }
