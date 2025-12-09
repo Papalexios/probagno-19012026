@@ -2,17 +2,33 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
-import { Download, FileText, ExternalLink, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, FileText, ExternalLink, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function CatalogPage() {
+  const { t, language } = useLanguage();
   const [scale, setScale] = useState(1);
+
+  const catalogInfo = [
+    { icon: FileText, label: t('catalog.size'), value: '~15 MB' },
+    { icon: FileText, label: t('catalog.pages'), value: '66+' },
+    { icon: FileText, label: t('catalog.version'), value: '2026' },
+    { icon: FileText, label: t('catalog.language'), value: t('catalog.greek') },
+  ];
+
+  const catalogHighlights = [
+    { title: t('catalog.elegantFurniture'), description: t('catalog.elegantDesc'), pages: language === 'el' ? 'Σελ. 10-62' : 'P. 10-62' },
+    { title: t('catalog.sinks'), description: t('catalog.sinksDesc'), pages: language === 'el' ? 'Σελ. 64' : 'P. 64' },
+    { title: t('catalog.columnsCabinets'), description: t('catalog.columnsDesc'), pages: language === 'el' ? 'Σελ. 40-62' : 'P. 40-62' },
+    { title: t('catalog.ledMirrors'), description: t('catalog.ledMirrorsDesc'), pages: language === 'el' ? 'Σελ. 10-62' : 'P. 10-62' },
+  ];
 
   return (
     <Layout>
       <Helmet>
-        <title>Κατάλογος 2026 | PROBAGNO - Έπιπλα Μπάνιου</title>
-        <meta name="description" content="Κατεβάστε τον κατάλογο PROBAGNO 2026 με όλα τα έπιπλα μπάνιου, νιπτήρες, καθρέπτες και κολώνες. PDF κατάλογος με τιμές και διαστάσεις." />
+        <title>{language === 'el' ? 'Κατάλογος 2026 | PROBAGNO - Έπιπλα Μπάνιου' : 'Catalog 2026 | PROBAGNO - Bathroom Furniture'}</title>
+        <meta name="description" content={language === 'el' ? 'Κατεβάστε τον κατάλογο PROBAGNO 2026 με όλα τα έπιπλα μπάνιου, νιπτήρες, καθρέπτες και κολώνες. PDF κατάλογος με τιμές και διαστάσεις.' : 'Download the PROBAGNO 2026 catalog with all bathroom furniture, sinks, mirrors and columns. PDF catalog with prices and dimensions.'} />
       </Helmet>
 
       {/* Hero Section */}
@@ -25,11 +41,10 @@ export default function CatalogPage() {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="font-display text-5xl md:text-7xl font-bold mb-6">
-              Κατάλογος 2026
+              {t('catalog.title')}
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Ανακαλύψτε τη νέα συλλογή επίπλων μπάνιου PROBAGNO. 
-              Περιηγηθείτε online ή κατεβάστε τον κατάλογο σε μορφή PDF.
+              {t('catalog.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
@@ -38,7 +53,7 @@ export default function CatalogPage() {
                 className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
               >
                 <Download className="w-5 h-5" />
-                Λήψη Καταλόγου (PDF)
+                {t('catalog.download')}
               </a>
               <a
                 href="/PROBAGNO_2026.pdf"
@@ -47,7 +62,7 @@ export default function CatalogPage() {
                 className="inline-flex items-center justify-center gap-2 border border-border px-8 py-4 rounded-lg font-semibold hover:bg-muted transition-colors"
               >
                 <ExternalLink className="w-5 h-5" />
-                Άνοιγμα σε νέα καρτέλα
+                {t('catalog.openNewTab')}
               </a>
             </div>
           </motion.div>
@@ -58,12 +73,7 @@ export default function CatalogPage() {
       <section className="py-12 border-b border-border">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-6">
-            {[
-              { icon: FileText, label: 'Μέγεθος', value: '~15 MB' },
-              { icon: FileText, label: 'Σελίδες', value: '66+' },
-              { icon: FileText, label: 'Έκδοση', value: '2026' },
-              { icon: FileText, label: 'Γλώσσα', value: 'Ελληνικά' },
-            ].map((item, index) => (
+            {catalogInfo.map((item, index) => (
               <motion.div
                 key={item.label}
                 initial={{ opacity: 0, y: 20 }}
@@ -87,7 +97,7 @@ export default function CatalogPage() {
           <div className="bg-muted/30 rounded-2xl p-4">
             {/* Controls */}
             <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-              <h2 className="font-display text-xl font-semibold">Προεπισκόπηση Καταλόγου</h2>
+              <h2 className="font-display text-xl font-semibold">{t('catalog.preview')}</h2>
               <div className="flex items-center gap-2">
                 <Button 
                   variant="outline" 
@@ -132,20 +142,15 @@ export default function CatalogPage() {
             className="text-center mb-12"
           >
             <h2 className="font-display text-4xl font-bold mb-4">
-              Τι θα βρείτε στον κατάλογο
+              {t('catalog.whatYouFind')}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Πλήρης κατάλογος με τιμές, διαστάσεις και τεχνικά χαρακτηριστικά
+              {t('catalog.findSubtitle')}
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: 'Έπιπλα ELEGANT', description: 'Premium σειρά επίπλων μπάνιου με Swiss Krono υλικά', pages: 'Σελ. 10-62' },
-              { title: 'Νιπτήρες', description: 'Square, Merkur, Chic, Hera, Vega σε πολλά μεγέθη', pages: 'Σελ. 64' },
-              { title: 'Κολώνες & Ντουλάπια', description: 'Αποθηκευτικές λύσεις για κάθε χώρο', pages: 'Σελ. 40-62' },
-              { title: 'Καθρέπτες LED', description: 'Στρογγυλοί και ορθογώνιοι με φωτισμό', pages: 'Σελ. 10-62' },
-            ].map((item, index) => (
+            {catalogHighlights.map((item, index) => (
               <motion.div
                 key={item.title}
                 initial={{ opacity: 0, y: 20 }}
@@ -172,17 +177,17 @@ export default function CatalogPage() {
             viewport={{ once: true }}
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">
-              Θέλετε περισσότερες πληροφορίες;
+              {t('catalog.moreInfo')}
             </h2>
             <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-8">
-              Επικοινωνήστε μαζί μας για εξατομικευμένη προσφορά ή επισκεφθείτε το showroom μας.
+              {t('catalog.moreInfoSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a 
                 href="/contact"
                 className="inline-flex items-center justify-center gap-2 bg-primary-foreground text-primary px-8 py-4 rounded-lg font-semibold hover:bg-primary-foreground/90 transition-colors"
               >
-                Επικοινωνία
+                {t('nav.contact')}
               </a>
               <a
                 href="tel:2106622215"

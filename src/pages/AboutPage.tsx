@@ -3,52 +3,64 @@ import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
 import { Award, Users, Factory, Leaf, Shield, Clock } from 'lucide-react';
 import heroImage from '@/assets/hero-bathroom.jpg';
-
-const stats = [
-  { number: '50+', label: 'Χρόνια Εμπειρίας', icon: Clock },
-  { number: '10,000+', label: 'Ικανοποιημένοι Πελάτες', icon: Users },
-  { number: '500+', label: 'Μοντέλα Προϊόντων', icon: Factory },
-  { number: '100%', label: 'Ελληνική Παραγωγή', icon: Shield },
-];
-
-const values = [
-  {
-    icon: Award,
-    title: 'Ποιότητα',
-    description: 'Χρησιμοποιούμε μόνο υλικά υψηλής ποιότητας όπως Swiss Krono, Corian, και μασίφ δρυς για μακροχρόνια αντοχή.',
-  },
-  {
-    icon: Factory,
-    title: 'Ελληνική Κατασκευή',
-    description: 'Όλα τα προϊόντα μας κατασκευάζονται στο εργοστάσιό μας στην Ελλάδα με υψηλά πρότυπα ποιότητας.',
-  },
-  {
-    icon: Users,
-    title: 'Εξυπηρέτηση',
-    description: 'Παρέχουμε πλήρη υποστήριξη από τον σχεδιασμό μέχρι την εγκατάσταση με εξειδικευμένο προσωπικό.',
-  },
-  {
-    icon: Leaf,
-    title: 'Περιβαλλοντική Συνείδηση',
-    description: 'Χρησιμοποιούμε φιλικά προς το περιβάλλον υλικά και διαδικασίες παραγωγής.',
-  },
-];
-
-const timeline = [
-  { year: '1974', title: 'Ίδρυση', description: 'Ιδρύεται η PROBAGNO στην Αθήνα ως οικογενειακή επιχείρηση.' },
-  { year: '1985', title: 'Επέκταση', description: 'Νέο εργοστάσιο παραγωγής με σύγχρονο εξοπλισμό.' },
-  { year: '1995', title: 'Εξαγωγές', description: 'Έναρξη εξαγωγών σε χώρες της Ευρώπης και Μέσης Ανατολής.' },
-  { year: '2010', title: 'LED Technology', description: 'Εισαγωγή LED φωτισμού σε όλα τα προϊόντα.' },
-  { year: '2020', title: 'Digital Era', description: 'Ψηφιακός μετασχηματισμός και e-commerce.' },
-  { year: '2024', title: 'Σήμερα', description: 'Πάνω από 500 μοντέλα και 50 χρόνια εμπειρίας.' },
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function AboutPage() {
+  const { t, language } = useLanguage();
+
+  const stats = [
+    { number: '50+', label: t('about.yearsExperience'), icon: Clock },
+    { number: '10,000+', label: t('about.satisfiedClients'), icon: Users },
+    { number: '500+', label: t('about.productModels'), icon: Factory },
+    { number: '100%', label: t('about.greekProduction'), icon: Shield },
+  ];
+
+  const values = [
+    {
+      icon: Award,
+      title: t('about.quality'),
+      description: t('about.qualityDesc'),
+    },
+    {
+      icon: Factory,
+      title: t('about.greekManufacturing'),
+      description: t('about.greekManufacturingDesc'),
+    },
+    {
+      icon: Users,
+      title: t('about.service'),
+      description: t('about.serviceDesc'),
+    },
+    {
+      icon: Leaf,
+      title: t('about.environmental'),
+      description: t('about.environmentalDesc'),
+    },
+  ];
+
+  const timeline = [
+    { year: '1974', title: t('about.founding'), description: t('about.timeline.1974') },
+    { year: '1985', title: t('about.expansion'), description: t('about.timeline.1985') },
+    { year: '1995', title: t('about.exports'), description: t('about.timeline.1995') },
+    { year: '2010', title: t('about.ledTechnology'), description: t('about.timeline.2010') },
+    { year: '2020', title: t('about.digitalEra'), description: t('about.timeline.2020') },
+    { year: '2024', title: t('about.today'), description: t('about.timeline.2024') },
+  ];
+
+  const materials = [
+    'Swiss Krono CDF',
+    'Corian',
+    language === 'el' ? 'Μασίφ Δρυς' : 'Solid Oak',
+    language === 'el' ? 'Λάκα Γυαλιστερή' : 'Glossy Lacquer',
+    'Matrix/S4',
+    'LED Technology'
+  ];
+
   return (
     <Layout>
       <Helmet>
-        <title>Η Εταιρεία | PROBAGNO - Έπιπλα Μπάνιου από το 1974</title>
-        <meta name="description" content="Η PROBAGNO κατασκευάζει έπιπλα μπάνιου στην Ελλάδα από το 1974. 50 χρόνια εμπειρίας, ποιότητας και καινοτομίας." />
+        <title>{language === 'el' ? 'Η Εταιρεία | PROBAGNO - Έπιπλα Μπάνιου από το 1974' : 'About Us | PROBAGNO - Bathroom Furniture Since 1974'}</title>
+        <meta name="description" content={language === 'el' ? 'Η PROBAGNO κατασκευάζει έπιπλα μπάνιου στην Ελλάδα από το 1974. 50 χρόνια εμπειρίας, ποιότητας και καινοτομίας.' : 'PROBAGNO manufactures bathroom furniture in Greece since 1974. 50 years of experience, quality and innovation.'} />
       </Helmet>
 
       {/* Hero Section */}
@@ -76,7 +88,7 @@ export default function AboutPage() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="font-display text-5xl md:text-7xl font-bold mb-6"
           >
-            PRO BAGNO
+            {t('about.title')}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -84,7 +96,7 @@ export default function AboutPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto"
           >
-            50 χρόνια δημιουργίας. Ελληνική ποιότητα. Διεθνής αναγνώριση.
+            {t('about.heroSubtitle')}
           </motion.p>
         </div>
       </section>
@@ -124,23 +136,12 @@ export default function AboutPage() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">
-                Η Ιστορία μας
+                {t('about.ourStory')}
               </h2>
               <div className="space-y-4 text-lg text-muted-foreground">
-                <p>
-                  Η PROBAGNO ιδρύθηκε το 1974 ως μια μικρή οικογενειακή επιχείρηση με όραμα 
-                  να προσφέρει ποιοτικά έπιπλα μπάνιου στην ελληνική αγορά.
-                </p>
-                <p>
-                  Μέσα από συνεχή επενδύσεις σε τεχνολογία και ανθρώπινο δυναμικό, 
-                  εξελιχθήκαμε σε έναν από τους κορυφαίους κατασκευαστές επίπλων μπάνιου 
-                  στην Ελλάδα, με εξαγωγές σε πολλές χώρες.
-                </p>
-                <p>
-                  Σήμερα, με περισσότερα από 500 μοντέλα προϊόντων και ένα σύγχρονο 
-                  εργοστάσιο παραγωγής, συνεχίζουμε να καινοτομούμε και να προσφέρουμε 
-                  λύσεις υψηλής αισθητικής και λειτουργικότητας.
-                </p>
+                <p>{t('about.storyP1')}</p>
+                <p>{t('about.storyP2')}</p>
+                <p>{t('about.storyP3')}</p>
               </div>
             </motion.div>
             <motion.div
@@ -159,7 +160,7 @@ export default function AboutPage() {
               </div>
               <div className="absolute -bottom-6 -left-6 bg-primary text-primary-foreground p-6 rounded-2xl">
                 <div className="font-display text-4xl font-bold">1974</div>
-                <div className="text-sm">Έτος Ίδρυσης</div>
+                <div className="text-sm">{t('about.yearFounded')}</div>
               </div>
             </motion.div>
           </div>
@@ -176,10 +177,10 @@ export default function AboutPage() {
             className="text-center mb-16"
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
-              Οι Αξίες μας
+              {t('about.ourValues')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Αυτά που μας καθοδηγούν εδώ και 50 χρόνια
+              {t('about.valuesSubtitle')}
             </p>
           </motion.div>
           
@@ -212,10 +213,10 @@ export default function AboutPage() {
             className="text-center mb-16"
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
-              Η Πορεία μας
+              {t('about.ourJourney')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              50 χρόνια εξέλιξης και καινοτομίας
+              {t('about.journeySubtitle')}
             </p>
           </motion.div>
 
@@ -263,22 +264,15 @@ export default function AboutPage() {
             className="text-center mb-12"
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
-              Υλικά & Φινιρίσματα
+              {t('about.materialsFinishes')}
             </h2>
             <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-              Χρησιμοποιούμε τα καλύτερα υλικά για μακροχρόνια ποιότητα
+              {t('about.materialsSubtitle')}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              'Swiss Krono CDF',
-              'Corian',
-              'Μασίφ Δρυς',
-              'Λάκα Γυαλιστερή',
-              'Matrix/S4',
-              'LED Technology'
-            ].map((material, index) => (
+            {materials.map((material, index) => (
               <motion.div
                 key={material}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -298,12 +292,12 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="mt-12 p-6 bg-primary-foreground/5 rounded-2xl"
           >
-            <h3 className="font-semibold text-lg mb-4">Σημαντικές Πληροφορίες:</h3>
+            <h3 className="font-semibold text-lg mb-4">{t('about.importantInfo')}</h3>
             <ul className="space-y-2 text-primary-foreground/80">
-              <li>• Στις τιμές του τιμοκαταλόγου μας δεν συμπεριλαμβάνεται ο Φ.Π.Α.</li>
-              <li>• Σε περίπτωση αγοράς μόνο νιπτήρα, θα ισχύει έκπτωση 50%.</li>
-              <li>• Σε ορισμένα έπιπλα μπορούν να τοποθετηθούν μεταλλικά πόδια κατόπιν συνεννόησης.</li>
-              <li>• Τα εμπορεύματα ταξιδεύουν για λογαριασμό και με ευθύνη του αγοραστή.</li>
+              <li>• {t('about.info1')}</li>
+              <li>• {t('about.info2')}</li>
+              <li>• {t('about.info3')}</li>
+              <li>• {t('about.info4')}</li>
             </ul>
           </motion.div>
         </div>

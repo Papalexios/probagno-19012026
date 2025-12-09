@@ -6,6 +6,7 @@ import { ArrowRight, MapPin, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Import project images
 import monastiraki1 from '@/assets/projects/monastiraki-1.jpg';
@@ -17,65 +18,65 @@ import lagonisi1 from '@/assets/projects/lagonisi-1.jpg';
 import mykonos1 from '@/assets/projects/mykonos-1.jpg';
 import mykonos2 from '@/assets/projects/mykonos-2.jpg';
 
-const projects = [
-  {
-    id: 1,
-    title: 'Μοναστηράκι',
-    location: 'Αθήνα',
-    description: 'Πολυτελής ανακαίνιση μπάνιου σε ιστορικό κτίριο στο κέντρο της Αθήνας. Συνδυασμός μοντέρνου design με κλασικά στοιχεία.',
-    category: 'Κατοικία',
-    images: [monastiraki1, monastiraki2],
-  },
-  {
-    id: 2,
-    title: 'Ύδρα',
-    location: 'Ύδρα',
-    description: 'Νησιωτική κατοικία με μίνιμαλ αισθητική. Έπιπλα μπάνιου σε λευκό γυαλιστερό που αντανακλούν το φως του Αιγαίου.',
-    category: 'Villa',
-    images: [hydra1, hydra2],
-  },
-  {
-    id: 3,
-    title: 'Γλυφάδα',
-    location: 'Γλυφάδα, Αθήνα',
-    description: 'Μοντέρνο διαμέρισμα στα νότια προάστια. Premium έπιπλα μπάνιου με LED καθρέπτες και custom λύσεις αποθήκευσης.',
-    category: 'Κατοικία',
-    images: [glyfada1],
-  },
-  {
-    id: 4,
-    title: 'Λαγονήσι',
-    location: 'Λαγονήσι, Αττική',
-    description: 'Παραθαλάσσια κατοικία με σύγχρονο σχεδιασμό. Ανθεκτικά υλικά ιδανικά για το θαλασσινό περιβάλλον.',
-    category: 'Villa',
-    images: [lagonisi1],
-  },
-  {
-    id: 5,
-    title: 'Μύκονος',
-    location: 'Μύκονος',
-    description: 'Luxury villa στη Μύκονο με πολλαπλά μπάνια. Λευκά έπιπλα σε αρμονία με την κυκλαδίτικη αρχιτεκτονική.',
-    category: 'Villa',
-    images: [mykonos1, mykonos2],
-  },
-];
-
-const categories = ['Όλα', 'Κατοικία', 'Villa', 'Ξενοδοχείο'];
-
 export default function ProjectsPage() {
-  const [selectedCategory, setSelectedCategory] = useState('Όλα');
-  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
+  const { t, language } = useLanguage();
+  const [selectedCategory, setSelectedCategory] = useState(t('projects.all'));
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const filteredProjects = selectedCategory === 'Όλα' 
+  const projects = [
+    {
+      id: 1,
+      title: language === 'el' ? 'Μοναστηράκι' : 'Monastiraki',
+      location: language === 'el' ? 'Αθήνα' : 'Athens',
+      description: t('projects.monastiraki'),
+      category: t('projects.residence'),
+      images: [monastiraki1, monastiraki2],
+    },
+    {
+      id: 2,
+      title: language === 'el' ? 'Ύδρα' : 'Hydra',
+      location: language === 'el' ? 'Ύδρα' : 'Hydra',
+      description: t('projects.hydra'),
+      category: 'Villa',
+      images: [hydra1, hydra2],
+    },
+    {
+      id: 3,
+      title: language === 'el' ? 'Γλυφάδα' : 'Glyfada',
+      location: language === 'el' ? 'Γλυφάδα, Αθήνα' : 'Glyfada, Athens',
+      description: t('projects.glyfada'),
+      category: t('projects.residence'),
+      images: [glyfada1],
+    },
+    {
+      id: 4,
+      title: language === 'el' ? 'Λαγονήσι' : 'Lagonisi',
+      location: language === 'el' ? 'Λαγονήσι, Αττική' : 'Lagonisi, Attica',
+      description: t('projects.lagonisi'),
+      category: 'Villa',
+      images: [lagonisi1],
+    },
+    {
+      id: 5,
+      title: language === 'el' ? 'Μύκονος' : 'Mykonos',
+      location: language === 'el' ? 'Μύκονος' : 'Mykonos',
+      description: t('projects.mykonos'),
+      category: 'Villa',
+      images: [mykonos1, mykonos2],
+    },
+  ];
+
+  const categories = [t('projects.all'), t('projects.residence'), 'Villa', t('projects.hotel')];
+
+  const filteredProjects = selectedCategory === t('projects.all') 
     ? projects 
     : projects.filter(p => p.category === selectedCategory);
 
   return (
     <Layout>
       <Helmet>
-        <title>Έργα | PROBAGNO - Έπιπλα Μπάνιου</title>
-        <meta name="description" content="Δείτε τα έργα μας σε Μοναστηράκι, Ύδρα, Γλυφάδα, Λαγονήσι και Μύκονο. Πολυτελή έπιπλα μπάνιου σε κατοικίες και villas." />
+        <title>{language === 'el' ? 'Έργα | PROBAGNO - Έπιπλα Μπάνιου' : 'Projects | PROBAGNO - Bathroom Furniture'}</title>
+        <meta name="description" content={language === 'el' ? 'Δείτε τα έργα μας σε Μοναστηράκι, Ύδρα, Γλυφάδα, Λαγονήσι και Μύκονο. Πολυτελή έπιπλα μπάνιου σε κατοικίες και villas.' : 'See our projects in Monastiraki, Hydra, Glyfada, Lagonisi and Mykonos. Luxury bathroom furniture in residences and villas.'} />
       </Helmet>
 
       {/* Hero Section */}
@@ -95,7 +96,7 @@ export default function ProjectsPage() {
             transition={{ duration: 0.8 }}
             className="font-display text-5xl md:text-7xl font-bold mb-6"
           >
-            Έργα
+            {t('projects.title')}
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -103,7 +104,7 @@ export default function ProjectsPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl text-muted-foreground max-w-2xl mx-auto"
           >
-            50 χρόνια εμπειρίας σε κατοικίες, ξενοδοχεία και villas σε όλη την Ελλάδα
+            {t('projects.subtitle')}
           </motion.p>
         </div>
       </section>
@@ -144,7 +145,6 @@ export default function ProjectsPage() {
                     <div 
                       className="relative aspect-[4/3] rounded-2xl overflow-hidden cursor-pointer mb-4"
                       onClick={() => {
-                        setSelectedProject(project);
                         setSelectedImageIndex(0);
                       }}
                     >
@@ -157,7 +157,7 @@ export default function ProjectsPage() {
                       <div className="absolute bottom-4 left-4 right-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                         <Button variant="secondary" size="sm" className="gap-2">
                           <Maximize2 className="w-4 h-4" />
-                          Περισσότερα
+                          {t('projects.more')}
                         </Button>
                       </div>
                       <div className="absolute top-4 left-4">
@@ -168,7 +168,7 @@ export default function ProjectsPage() {
                       {project.images.length > 1 && (
                         <div className="absolute top-4 right-4">
                           <span className="px-2 py-1 bg-background/80 text-foreground text-xs rounded-full">
-                            {project.images.length} φωτογραφίες
+                            {project.images.length} {t('projects.photos')}
                           </span>
                         </div>
                       )}
@@ -236,14 +236,14 @@ export default function ProjectsPage() {
             viewport={{ once: true }}
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">
-              Έχετε ένα project;
+              {t('projects.haveProject')}
             </h2>
             <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-8">
-              Επικοινωνήστε μαζί μας για εξατομικευμένη προσφορά για το δικό σας έργο.
+              {t('projects.ctaSubtitle')}
             </p>
             <Link to="/contact">
               <Button variant="secondary" size="lg" className="gap-2">
-                Επικοινωνία <ArrowRight className="w-5 h-5" />
+                {t('nav.contact')} <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
           </motion.div>

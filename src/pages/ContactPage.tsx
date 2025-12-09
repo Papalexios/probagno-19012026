@@ -2,44 +2,17 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
-import { Phone, Mail, MapPin, Clock, Send, Building2, Facebook, Instagram } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Facebook, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-
-const contactInfo = [
-  {
-    icon: Phone,
-    title: 'Τηλέφωνα',
-    lines: ['210 6622215', '210 6622218'],
-  },
-  {
-    icon: Mail,
-    title: 'Email',
-    lines: ['info@probagno.gr'],
-  },
-  {
-    icon: MapPin,
-    title: 'Διεύθυνση',
-    lines: ['2ο χλμ Λεωφόρος Κορωπίου-Βάρης', 'Τ.Θ. 25 - ΤΚ 19400 - Κορωπί'],
-  },
-  {
-    icon: Clock,
-    title: 'Ωράριο',
-    lines: ['Δευτέρα - Παρασκευή: 08:00 - 16:00', 'Σάββατο: Κλειστά'],
-  },
-];
-
-const bankAccounts = [
-  { bank: 'EUROBANK', account: '0026.0040.62.0201075629', iban: 'GR45 0260 0400 0006 2020 1075 629' },
-  { bank: 'ΕΘΝΙΚΗ ΤΡΑΠΕΖΑ', account: '175/470435-58', iban: 'GR81 0110 1750 0000 1754 7043 558' },
-  { bank: 'ALPHA BANK', account: '147 00 2002 011854', iban: 'GR90 0140 1470 1470 0200 2011 854' },
-  { bank: 'ΤΡΑΠΕΖΑ ΠΕΙΡΑΙΩΣ', account: '5033-068087-264', iban: 'GR35 0172 0330 0050 3306 8087 264' },
-];
+import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function ContactPage() {
+  const { t, language } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -50,27 +23,72 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: t('contact.phone'),
+      lines: ['210 6622215', '210 6622218'],
+    },
+    {
+      icon: Mail,
+      title: t('contact.email'),
+      lines: ['info@probagno.gr'],
+    },
+    {
+      icon: MapPin,
+      title: t('contact.address'),
+      lines: language === 'el' 
+        ? ['2ο χλμ Λεωφόρος Κορωπίου-Βάρης', 'Τ.Θ. 25 - ΤΚ 19400 - Κορωπί']
+        : ['2nd km Koropi-Vari Avenue', 'P.O. Box 25 - PC 19400 - Koropi'],
+    },
+    {
+      icon: Clock,
+      title: t('contact.hours'),
+      lines: [t('contact.hoursWeekday'), t('contact.hoursSaturday')],
+    },
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: 'Μήνυμα Εστάλη!',
-      description: 'Θα επικοινωνήσουμε μαζί σας το συντομότερο δυνατό.',
-    });
-    
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    setIsSubmitting(false);
+    try {
+      // Save to Supabase
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          subject: formData.subject,
+          message: formData.message,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: t('contact.sent'),
+        description: t('contact.sentDescription'),
+      });
+      
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: language === 'el' ? 'Σφάλμα' : 'Error',
+        description: language === 'el' ? 'Παρουσιάστηκε σφάλμα. Παρακαλώ δοκιμάστε ξανά.' : 'An error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Layout>
       <Helmet>
-        <title>Επικοινωνία | PROBAGNO - Έπιπλα Μπάνιου Κορωπί</title>
-        <meta name="description" content="PROBAGNO - STEFANOS PANOUSSOS & CO E.E. Τηλ: 210 6622215, 210 6622218. 2ο χλμ Λεωφόρος Κορωπίου-Βάρης, Κορωπί 194 00. Έπιπλα μπάνιου υψηλής ποιότητας." />
+        <title>{language === 'el' ? 'Επικοινωνία | PROBAGNO - Έπιπλα Μπάνιου Κορωπί' : 'Contact | PROBAGNO - Bathroom Furniture Koropi'}</title>
+        <meta name="description" content={language === 'el' ? 'PROBAGNO - STEFANOS PANOUSSOS & CO E.E. Τηλ: 210 6622215, 210 6622218. 2ο χλμ Λεωφόρος Κορωπίου-Βάρης, Κορωπί 194 00.' : 'PROBAGNO - STEFANOS PANOUSSOS & CO E.E. Tel: 210 6622215, 210 6622218. 2nd km Koropi-Vari Avenue, Koropi 194 00.'} />
       </Helmet>
 
       {/* Hero Section */}
@@ -83,11 +101,11 @@ export default function ContactPage() {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="font-display text-5xl md:text-7xl font-bold mb-6">
-              Επικοινωνία
+              {t('contact.title')}
             </h1>
             <p className="text-xl text-muted-foreground">
               PROBAGNO - STEFANOS PANOUSSOS & CO E.E.<br />
-              Είμαστε εδώ για να απαντήσουμε σε κάθε ερώτησή σας.
+              {t('contact.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -129,18 +147,18 @@ export default function ContactPage() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="font-display text-3xl font-bold mb-6">
-                Στείλτε μας μήνυμα
+                {t('contact.sendMessage')}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Ονοματεπώνυμο *</Label>
+                    <Label htmlFor="name">{t('contact.name')} *</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
-                      placeholder="Το όνομά σας"
+                      placeholder={t('contact.namePlaceholder')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -151,39 +169,39 @@ export default function ContactPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
-                      placeholder="email@example.com"
+                      placeholder={t('contact.emailPlaceholder')}
                     />
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Τηλέφωνο</Label>
+                    <Label htmlFor="phone">{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
                     <Input
                       id="phone"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="210 1234567"
+                      placeholder={t('contact.phonePlaceholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Θέμα *</Label>
+                    <Label htmlFor="subject">{t('contact.subject')} *</Label>
                     <Input
                       id="subject"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
-                      placeholder="Θέμα μηνύματος"
+                      placeholder={t('contact.subjectPlaceholder')}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="message">Μήνυμα *</Label>
+                  <Label htmlFor="message">{t('contact.message')} *</Label>
                   <Textarea
                     id="message"
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     required
-                    placeholder="Το μήνυμά σας..."
+                    placeholder={t('contact.messagePlaceholder')}
                     rows={6}
                   />
                 </div>
@@ -194,13 +212,13 @@ export default function ContactPage() {
                   disabled={isSubmitting}
                 >
                   <Send className="w-4 h-4" />
-                  {isSubmitting ? 'Αποστολή...' : 'Αποστολή Μηνύματος'}
+                  {isSubmitting ? t('contact.sending') : t('contact.send')}
                 </Button>
               </form>
 
               {/* Social Links */}
               <div className="mt-8 pt-8 border-t border-border">
-                <h3 className="font-semibold mb-4">Ακολουθήστε μας</h3>
+                <h3 className="font-semibold mb-4">{t('contact.followUs')}</h3>
                 <div className="flex gap-4">
                   <a 
                     href="https://www.facebook.com/Probagno" 
@@ -234,7 +252,7 @@ export default function ContactPage() {
             >
               <div>
                 <h2 className="font-display text-3xl font-bold mb-6">
-                  Επισκεφθείτε μας
+                  {t('contact.visitUs')}
                 </h2>
                 <div className="aspect-video bg-muted rounded-2xl overflow-hidden">
                   <iframe
@@ -250,14 +268,16 @@ export default function ContactPage() {
                 </div>
                 <div className="mt-4 p-4 bg-muted/30 rounded-lg">
                   <p className="font-semibold">PROBAGNO - STEFANOS PANOUSSOS & CO E.E.</p>
-                  <p className="text-sm text-muted-foreground">2ο Χλμ Λεωφόρος Κορωπίου-Βάρης, Koropi 194 00</p>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'el' ? '2ο Χλμ Λεωφόρος Κορωπίου-Βάρης, Koropi 194 00' : '2nd km Koropi-Vari Avenue, Koropi 194 00'}
+                  </p>
                   <a 
                     href="https://www.google.com/maps/dir//PROBAGNO+-+STEFANOS+PANOUSSOS+%26+CO+E.E.,+2o+Xlm+Leof.+Koropiou-Varis,+Koropi+194+00/@37.8998369,23.8730884,17z"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary text-sm hover:underline mt-2 inline-block"
                   >
-                    Οδηγίες πρόσβασης →
+                    {t('contact.directions')} →
                   </a>
                 </div>
               </div>
@@ -265,10 +285,10 @@ export default function ContactPage() {
               {/* Quick Contact */}
               <div className="bg-primary text-primary-foreground p-8 rounded-2xl">
                 <h3 className="font-display text-2xl font-bold mb-4">
-                  Χρειάζεστε άμεση βοήθεια;
+                  {t('contact.needHelp')}
                 </h3>
                 <p className="text-primary-foreground/80 mb-6">
-                  Καλέστε μας απευθείας για άμεση εξυπηρέτηση
+                  {t('contact.callUs')}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <a 

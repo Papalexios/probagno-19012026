@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ShoppingBag, Heart, Share2, Truck, Shield, RotateCcw, Check, Loader2 } from 'lucide-react';
+import { ShoppingBag, Heart, Truck, Shield, RotateCcw, Check, Loader2 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { useProductBySlug, useProductsQuery } from '@/hooks/useProducts';
 import { useCartStore } from '@/store/cartStore';
@@ -13,9 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProductCard } from '@/components/products/ProductCard';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { t, language } = useLanguage();
   const { data: product, isLoading } = useProductBySlug(slug || '');
   const { data: products = [] } = useProductsQuery();
   const { addItem } = useCartStore();
@@ -42,22 +44,24 @@ export default function ProductDetailPage() {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-2xl font-semibold mb-4">Το προϊόν δεν βρέθηκε</h1>
+          <h1 className="text-2xl font-semibold mb-4">{t('product.notFound')}</h1>
           <Button asChild>
-            <Link to="/products">Επιστροφή στα Προϊόντα</Link>
+            <Link to="/products">{t('product.backToProducts')}</Link>
           </Button>
         </div>
       </Layout>
     );
   }
 
+  const productName = language === 'en' && product.nameEn ? product.nameEn : product.name;
+  const productDescription = language === 'en' && product.descriptionEn ? product.descriptionEn : product.description;
   const selectedDimension = product.dimensions.find((d) => d.id === selectedDimensionId) || product.dimensions[0];
   const displayPrice = product.salePrice || selectedDimension.price;
   const hasDiscount = product.salePrice && product.salePrice < product.basePrice;
 
   const handleAddToCart = () => {
     addItem(product, selectedDimension, quantity);
-    toast.success(`${product.name} προστέθηκε στο καλάθι`);
+    toast.success(`${productName} ${t('product.addedToCart')}`);
   };
 
   // Related products
@@ -65,21 +69,28 @@ export default function ProductDetailPage() {
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
+  const getCategoryName = (category: string) => {
+    if (category === 'vanities') return t('category.vanities');
+    if (category === 'mirrors') return t('category.mirrors');
+    if (category === 'cabinets') return t('category.cabinets');
+    return category;
+  };
+
   return (
     <>
       <Helmet>
-        <title>{product.name} | PROBAGNO</title>
-        <meta name="description" content={product.description} />
+        <title>{productName} | PROBAGNO</title>
+        <meta name="description" content={productDescription} />
       </Helmet>
       <Layout>
         {/* Breadcrumb */}
         <div className="container mx-auto px-4 py-6">
           <nav className="flex items-center gap-2 text-sm">
-            <Link to="/" className="text-muted-foreground hover:text-foreground">Αρχική</Link>
+            <Link to="/" className="text-muted-foreground hover:text-foreground">{t('product.home')}</Link>
             <span className="text-muted-foreground">/</span>
-            <Link to="/products" className="text-muted-foreground hover:text-foreground">Προϊόντα</Link>
+            <Link to="/products" className="text-muted-foreground hover:text-foreground">{t('nav.products')}</Link>
             <span className="text-muted-foreground">/</span>
-            <span>{product.name}</span>
+            <span>{productName}</span>
           </nav>
         </div>
 
@@ -95,7 +106,7 @@ export default function ProductDetailPage() {
               <div className="aspect-square rounded-lg overflow-hidden bg-muted">
                 <img
                   src={product.images[0]?.url}
-                  alt={product.name}
+                  alt={productName}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -138,11 +149,9 @@ export default function ProductDetailPage() {
               {/* Title & Price */}
               <div>
                 <p className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
-                  {product.category === 'vanities' && 'Έπιπλα Μπάνιου'}
-                  {product.category === 'mirrors' && 'Καθρέπτες'}
-                  {product.category === 'cabinets' && 'Ντουλάπια'}
+                  {getCategoryName(product.category)}
                 </p>
-                <h1 className="font-display text-3xl md:text-4xl font-semibold mb-4">{product.name}</h1>
+                <h1 className="font-display text-3xl md:text-4xl font-semibold mb-4">{productName}</h1>
                 <div className="flex items-baseline gap-3">
                   <span className="font-display text-3xl font-semibold">€{displayPrice.toLocaleString()}</span>
                   {hasDiscount && (
@@ -153,11 +162,11 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <p className="text-muted-foreground">{product.description}</p>
+              <p className="text-muted-foreground">{productDescription}</p>
 
               {/* Dimensions Selector */}
               <div>
-                <h3 className="font-medium mb-3">Επιλέξτε Διαστάσεις</h3>
+                <h3 className="font-medium mb-3">{t('product.selectDimensions')}</h3>
                 <RadioGroup value={selectedDimensionId} onValueChange={setSelectedDimensionId}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {product.dimensions.map((dim) => (
@@ -188,7 +197,7 @@ export default function ProductDetailPage() {
               {/* Colors */}
               {product.colors.length > 0 && (
                 <div>
-                  <h3 className="font-medium mb-3">Διαθέσιμα Χρώματα</h3>
+                  <h3 className="font-medium mb-3">{t('product.availableColors')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {product.colors.map((color) => (
                       <span key={color} className="px-3 py-1.5 bg-muted rounded-full text-sm">
@@ -218,7 +227,7 @@ export default function ProductDetailPage() {
                 </div>
                 <Button onClick={handleAddToCart} size="lg" className="flex-1 gap-2">
                   <ShoppingBag className="w-5 h-5" />
-                  Προσθήκη στο Καλάθι
+                  {t('product.addToCart')}
                 </Button>
                 <Button variant="outline" size="lg" className="px-4">
                   <Heart className="w-5 h-5" />
@@ -230,10 +239,10 @@ export default function ProductDetailPage() {
                 {product.inStock ? (
                   <>
                     <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-green-600">Σε απόθεμα</span>
+                    <span className="text-green-600">{t('product.inStock')}</span>
                   </>
                 ) : (
-                  <span className="text-destructive">Εξαντλήθηκε</span>
+                  <span className="text-destructive">{t('product.outOfStock')}</span>
                 )}
               </div>
 
@@ -241,15 +250,15 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
                 <div className="text-center">
                   <Truck className="w-6 h-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground">Δωρεάν Αποστολή</p>
+                  <p className="text-xs text-muted-foreground">{t('product.freeShipping')}</p>
                 </div>
                 <div className="text-center">
                   <Shield className="w-6 h-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground">5 Χρόνια Εγγύηση</p>
+                  <p className="text-xs text-muted-foreground">{t('product.warranty')}</p>
                 </div>
                 <div className="text-center">
                   <RotateCcw className="w-6 h-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground">14 Μέρες Επιστροφή</p>
+                  <p className="text-xs text-muted-foreground">{t('product.returns')}</p>
                 </div>
               </div>
             </motion.div>
@@ -260,13 +269,13 @@ export default function ProductDetailPage() {
             <Tabs defaultValue="features">
               <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent h-auto p-0">
                 <TabsTrigger value="features" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                  Χαρακτηριστικά
+                  {t('product.features')}
                 </TabsTrigger>
                 <TabsTrigger value="materials" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                  Υλικά
+                  {t('product.materials')}
                 </TabsTrigger>
                 <TabsTrigger value="shipping" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
-                  Αποστολή
+                  {t('product.shipping')}
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="features" className="pt-6">
@@ -288,9 +297,9 @@ export default function ProductDetailPage() {
               </TabsContent>
               <TabsContent value="shipping" className="pt-6">
                 <div className="space-y-4 text-muted-foreground">
-                  <p>Δωρεάν αποστολή σε όλη την Ελλάδα για παραγγελίες άνω των €500.</p>
-                  <p>Χρόνος παράδοσης: 5-10 εργάσιμες ημέρες.</p>
-                  <p>Δυνατότητα παραλαβής από το κατάστημά μας στην Αθήνα.</p>
+                  <p>{t('product.shippingInfo1')}</p>
+                  <p>{t('product.shippingInfo2')}</p>
+                  <p>{t('product.shippingInfo3')}</p>
                 </div>
               </TabsContent>
             </Tabs>
@@ -299,7 +308,7 @@ export default function ProductDetailPage() {
           {/* Related Products */}
           {relatedProducts.length > 0 && (
             <div className="mt-20">
-              <h2 className="font-display text-2xl font-semibold mb-8">Σχετικά Προϊόντα</h2>
+              <h2 className="font-display text-2xl font-semibold mb-8">{t('product.relatedProducts')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {relatedProducts.map((p, i) => (
                   <ProductCard key={p.id} product={p} index={i} />

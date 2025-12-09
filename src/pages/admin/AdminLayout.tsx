@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   Package,
@@ -10,21 +9,23 @@ import {
   Settings,
   LogOut,
   Menu,
-  X,
   ChevronRight,
   Loader2,
   Database,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSeedProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
+import Logo from '@/components/Logo';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Προϊόντα', href: '/admin/products', icon: Package },
   { name: 'Κατηγορίες', href: '/admin/categories', icon: FolderOpen },
+  { name: 'Μηνύματα', href: '/admin/messages', icon: MessageSquare },
   { name: 'Παραγγελίες', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Πελάτες', href: '/admin/customers', icon: Users },
   { name: 'Ρυθμίσεις', href: '/admin/settings', icon: Settings },
@@ -90,16 +91,9 @@ export default function AdminLayout() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 border-b border-border">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-display font-bold">PB</span>
-              </div>
-              <div>
-                <h1 className="font-display text-lg font-semibold">PROBAGNO</h1>
-                <p className="text-xs text-muted-foreground">Admin Panel</p>
-              </div>
-            </Link>
+          <div className="p-4 border-b border-border">
+            <Logo size="sm" />
+            <p className="text-xs text-muted-foreground mt-2 pl-1">Admin Panel</p>
           </div>
 
           {/* Admin Status */}
