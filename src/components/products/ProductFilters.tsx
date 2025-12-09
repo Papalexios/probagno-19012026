@@ -146,13 +146,26 @@ export function ProductFilters({
       .slice(0, 12); // Limit to top 12 materials
   }, [products]);
 
-  // Calculate category counts dynamically
-  const categoryWithCounts = useMemo(() => {
-    return categories.map((cat) => ({
-      ...cat,
-      dynamicCount: products.filter((p) => p.category === cat.slug).length,
+  // Define probagno.gr style tags (same as categories on probagno.gr)
+  const tagCategories = useMemo(() => {
+    const tagDefs = [
+      { slug: 'all', name: 'Probagno', nameEn: 'Probagno' },
+      { slug: 'Καθρέπτης LED', name: 'Καθρέπτης LED', nameEn: 'LED Mirror' },
+      { slug: 'Καθρέπτης με ντουλάπι', name: 'Καθρέπτης με ντουλάπι', nameEn: 'Mirror Cabinet' },
+      { slug: 'Κολώνα μπάνιου', name: 'Κολώνα μπάνιου', nameEn: 'Bathroom Column' },
+      { slug: 'Μεταλλική βάση', name: 'Μεταλλική βάση', nameEn: 'Metal Base' },
+      { slug: 'Ντουλάπι', name: 'Ντουλάπι', nameEn: 'Cabinet' },
+      { slug: 'Συρτάρι', name: 'Συρτάρι', nameEn: 'Drawer' },
+    ];
+    
+    return tagDefs.map((tag) => ({
+      ...tag,
+      id: tag.slug,
+      dynamicCount: tag.slug === 'all' 
+        ? products.length 
+        : products.filter((p) => p.tags?.includes(tag.slug)).length,
     }));
-  }, [categories, products]);
+  }, [products]);
 
   // Count active filters per section
   const activeFilterCounts = {
@@ -192,7 +205,7 @@ export function ProductFilters({
             
             <div className="flex flex-wrap gap-2">
               {selectedCategories.map((slug) => {
-                const cat = categories.find((c) => c.slug === slug);
+                const cat = tagCategories.find((c) => c.slug === slug);
                 return (
                   <motion.div
                     key={`cat-${slug}`}
@@ -298,29 +311,27 @@ export function ProductFilters({
           </AccordionTrigger>
           <AccordionContent className="pb-4">
             <div className="space-y-2.5">
-              {categoryWithCounts
-                .filter((cat) => cat.slug !== 'all')
-                .map((category) => (
-                  <label
-                    key={category.id}
-                    className={cn(
-                      'flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all',
-                      'hover:bg-accent/50',
-                      selectedCategories.includes(category.slug) && 'bg-primary/5 ring-1 ring-primary/20'
-                    )}
-                  >
-                    <Checkbox
-                      id={category.slug}
-                      checked={selectedCategories.includes(category.slug)}
-                      onCheckedChange={() => onCategoryChange(category.slug)}
-                      className="rounded-md"
-                    />
-                    <span className="text-sm flex-1">{category.name}</span>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                      {category.dynamicCount}
-                    </span>
-                  </label>
-                ))}
+              {tagCategories.map((category) => (
+                <label
+                  key={category.id}
+                  className={cn(
+                    'flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all',
+                    'hover:bg-accent/50',
+                    selectedCategories.includes(category.slug) && 'bg-primary/5 ring-1 ring-primary/20'
+                  )}
+                >
+                  <Checkbox
+                    id={category.slug}
+                    checked={selectedCategories.includes(category.slug)}
+                    onCheckedChange={() => onCategoryChange(category.slug)}
+                    className="rounded-md"
+                  />
+                  <span className="text-sm flex-1">{category.name}</span>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                    {category.dynamicCount}
+                  </span>
+                </label>
+              ))}
             </div>
           </AccordionContent>
         </AccordionItem>

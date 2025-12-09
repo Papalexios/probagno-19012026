@@ -23,6 +23,7 @@ export interface Product {
   descriptionEn: string;
   category: string;
   subcategory?: string;
+  tags?: string[];
   basePrice: number;
   salePrice?: number;
   images: ProductImage[];

@@ -14,6 +14,7 @@ interface DbProduct {
   description_en: string;
   category: string;
   subcategory: string | null;
+  tags: string[];
   base_price: number;
   sale_price: number | null;
   images: ProductImage[];
@@ -50,6 +51,7 @@ const toAppProduct = (db: DbProduct): Product => ({
   descriptionEn: db.description_en,
   category: db.category,
   subcategory: db.subcategory || undefined,
+  tags: db.tags || [],
   basePrice: Number(db.base_price),
   salePrice: db.sale_price ? Number(db.sale_price) : undefined,
   images: db.images as ProductImage[],
@@ -85,6 +87,7 @@ const toDbProduct = (product: Product): Omit<DbProduct, 'created_at' | 'updated_
   description_en: product.descriptionEn,
   category: product.category,
   subcategory: product.subcategory || null,
+  tags: product.tags || [],
   base_price: product.basePrice,
   sale_price: product.salePrice || null,
   images: product.images,

@@ -48,9 +48,14 @@ export default function ProductsPage() {
       );
     }
 
-    // Category filter
+    // Category filter (using tags)
     if (selectedCategories.length > 0) {
-      result = result.filter((p) => selectedCategories.includes(p.category));
+      // If "all" is selected, show all products
+      if (!selectedCategories.includes('all')) {
+        result = result.filter((p) => 
+          p.tags?.some((tag) => selectedCategories.includes(tag))
+        );
+      }
     }
 
     // Color filter
