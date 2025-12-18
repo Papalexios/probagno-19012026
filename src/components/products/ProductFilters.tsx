@@ -15,33 +15,27 @@ import {
 import { cn } from '@/lib/utils';
 import type { Product, Category } from '@/types/product';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { groupMaterialsIntoCategories, getCategoryDisplayName } from '@/utils/materialCategories';
 
 // Color name to visual representation mapping
 const colorMapping: Record<string, { hex: string; pattern?: string; label: string }> = {
-  // Whites
   'white': { hex: '#FFFFFF', label: 'Λευκό' },
   'λευκό': { hex: '#FFFFFF', label: 'Λευκό' },
   'λευκό γυαλιστερό': { hex: '#FFFFFF', label: 'Λευκό Γυαλ.' },
   'corian white': { hex: '#F5F5F5', label: 'Corian' },
   'corian': { hex: '#F0EDE8', label: 'Corian' },
-  
-  // Blacks & Grays
   'black': { hex: '#1a1a1a', label: 'Μαύρο' },
   'μαύρο': { hex: '#1a1a1a', label: 'Μαύρο' },
   'anthracite': { hex: '#383838', label: 'Ανθρακί' },
   'ανθρακί': { hex: '#454545', label: 'Ανθρακί' },
   'interior grey': { hex: '#8B8B8B', label: 'Γκρι' },
   'γκρι': { hex: '#8B8B8B', label: 'Γκρι' },
-  
-  // Woods & Natural
   'oak vanilla': { hex: '#D4C4A8', label: 'Δρυς Βανίλια' },
   'natural oak': { hex: '#C4A77D', label: 'Φυσική Δρυς' },
   'oak': { hex: '#B8956C', label: 'Δρυς' },
   'δρυς': { hex: '#B8956C', label: 'Δρυς' },
   'walnut': { hex: '#5D4037', label: 'Καρυδιά' },
   'καρυδιά': { hex: '#5D4037', label: 'Καρυδιά' },
-  
-  // Materials as colors
   'matrix/s4': { hex: '#E8E4DE', pattern: 'texture', label: 'Matrix/S4' },
   'lacquer gloss': { hex: '#FAFAFA', label: 'Λάκα Γυαλ.' },
   'lacquer gloss white': { hex: '#FFFFFF', label: 'Λάκα Λευκή' },
@@ -50,28 +44,14 @@ const colorMapping: Record<string, { hex: string; pattern?: string; label: strin
   'χρωματιστό γυαλιστερό': { hex: 'linear-gradient(135deg, #FF6B6B, #4ECDC4, #FFE66D)', pattern: 'gradient', label: 'Χρωματιστό' },
 };
 
-// Normalize color name for matching
-const normalizeColorName = (color: string): string => {
-  return color.toLowerCase().trim();
-};
+const normalizeColorName = (color: string): string => color.toLowerCase().trim();
 
-// Get color display info
 const getColorDisplay = (colorName: string) => {
   const normalized = normalizeColorName(colorName);
-  
-  // Try exact match first
-  if (colorMapping[normalized]) {
-    return colorMapping[normalized];
-  }
-  
-  // Try partial matches
+  if (colorMapping[normalized]) return colorMapping[normalized];
   for (const [key, value] of Object.entries(colorMapping)) {
-    if (normalized.includes(key) || key.includes(normalized)) {
-      return value;
-    }
+    if (normalized.includes(key) || key.includes(normalized)) return value;
   }
-  
-  // Default fallback
   return { hex: '#D4D4D8', label: colorName };
 };
 
@@ -102,54 +82,37 @@ export function ProductFilters({
   onCategoryChange,
   onColorChange,
   onMaterialChange,
-  onPriceChange,
   onClearFilters,
   hasFilters,
 }: ProductFiltersProps) {
   const { language, t } = useLanguage();
   
-  // Extract unique colors from products with counts
   const colorOptions = useMemo(() => {
     const colorCounts = new Map<string, number>();
-    
     products.forEach((product) => {
       product.colors.forEach((color) => {
         const normalized = normalizeColorName(color);
         colorCounts.set(normalized, (colorCounts.get(normalized) || 0) + 1);
       });
     });
-    
     return Array.from(colorCounts.entries())
-      .map(([color, count]) => ({
-        value: color,
-        display: getColorDisplay(color),
-        count,
-      }))
+      .map(([color, count]) => ({ value: color, display: getColorDisplay(color), count }))
       .sort((a, b) => b.count - a.count);
   }, [products]);
 
-  // Extract unique materials from products with counts - SHOW ALL
+  // PROFESSIONAL MATERIAL CATEGORIZATION
   const materialOptions = useMemo(() => {
     const materialCounts = new Map<string, number>();
-    
     products.forEach((product) => {
       product.materials.forEach((material) => {
-        const normalized = material.trim();
-        materialCounts.set(normalized, (materialCounts.get(normalized) || 0) + 1);
+        materialCounts.set(material.trim(), (materialCounts.get(material.trim()) || 0) + 1);
       });
     });
     
-    return Array.from(materialCounts.entries())
-      .map(([material, count]) => ({
-        value: material,
-        label: material.length > 30 ? material.slice(0, 27) + '...' : material,
-        count,
-      }))
-      .sort((a, b) => b.count - a.count);
-      // REMOVED .slice(0, 12) - Now shows ALL materials!
+    const materialsWithCounts = Array.from(materialCounts.entries()).map(([material, count]) => ({ material, count }));
+    return groupMaterialsIntoCategories(materialsWithCounts);
   }, [products]);
 
-  // Define probagno.gr style tags (same as categories on probagno.gr)
   const tagCategories = useMemo(() => {
     const tagDefs = [
       { slug: 'all', name: 'Probagno', nameEn: 'Probagno' },
@@ -160,17 +123,13 @@ export function ProductFilters({
       { slug: 'Ντουλάπι', name: 'Ντουλάπι', nameEn: 'Cabinet' },
       { slug: 'Συρτάρι', name: 'Συρτάρι', nameEn: 'Drawer' },
     ];
-    
     return tagDefs.map((tag) => ({
       ...tag,
       id: tag.slug,
-      dynamicCount: tag.slug === 'all' 
-        ? products.length 
-        : products.filter((p) => p.tags?.includes(tag.slug)).length,
+      dynamicCount: tag.slug === 'all' ? products.length : products.filter((p) => p.tags?.includes(tag.slug)).length,
     }));
   }, [products]);
 
-  // Count active filters per section
   const activeFilterCounts = {
     categories: selectedCategories.length,
     colors: selectedColors.length,
@@ -178,117 +137,48 @@ export function ProductFilters({
     price: priceRange[0] > 0 || priceRange[1] < maxPrice ? 1 : 0,
   };
 
-  // Determine which accordion sections should be open by default
-  const defaultOpenSections = ['categories', 'colors'];
-
   return (
     <div className="space-y-4">
-      {/* Active Filter Tags */}
       <AnimatePresence>
         {hasFilters && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="space-y-3"
-          >
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {t('products.activeFilters')}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClearFilters}
-                className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-              >
-                {t('products.clearAll')}
-              </Button>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('products.activeFilters')}</span>
+              <Button variant="ghost" size="sm" onClick={onClearFilters} className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground">{t('products.clearAll')}</Button>
             </div>
-            
             <div className="flex flex-wrap gap-2">
               {selectedCategories.map((slug) => {
                 const cat = tagCategories.find((c) => c.slug === slug);
                 return (
-                  <motion.div
-                    key={`cat-${slug}`}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                  >
-                    <Badge
-                      variant="secondary"
-                      className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors"
-                      onClick={() => onCategoryChange(slug)}
-                    >
-                      <Tag className="w-3 h-3" />
-                      {cat?.name || slug}
-                      <X className="w-3 h-3 ml-0.5" />
+                  <motion.div key={`cat-${slug}`} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+                    <Badge variant="secondary" className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors" onClick={() => onCategoryChange(slug)}>
+                      <Tag className="w-3 h-3" />{cat?.name || slug}<X className="w-3 h-3 ml-0.5" />
                     </Badge>
                   </motion.div>
                 );
               })}
-              
               {selectedColors.map((color) => {
                 const display = getColorDisplay(color);
                 return (
-                  <motion.div
-                    key={`color-${color}`}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                  >
-                    <Badge
-                      variant="secondary"
-                      className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors"
-                      onClick={() => onColorChange(color)}
-                    >
-                      <span
-                        className="w-3 h-3 rounded-full border border-border/50"
-                        style={{
-                          background: display.pattern === 'gradient' ? display.hex : display.hex,
-                        }}
-                      />
-                      {display.label}
-                      <X className="w-3 h-3 ml-0.5" />
+                  <motion.div key={`color-${color}`} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+                    <Badge variant="secondary" className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors" onClick={() => onColorChange(color)}>
+                      <span className="w-3 h-3 rounded-full border border-border/50" style={{ background: display.pattern === 'gradient' ? display.hex : display.hex }} />
+                      {display.label}<X className="w-3 h-3 ml-0.5" />
                     </Badge>
                   </motion.div>
                 );
               })}
-              
               {selectedMaterials.map((material) => (
-                <motion.div
-                  key={`mat-${material}`}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                >
-                  <Badge
-                    variant="secondary"
-                    className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors"
-                    onClick={() => onMaterialChange(material)}
-                  >
-                    <Layers className="w-3 h-3" />
-                    {material.length > 15 ? material.slice(0, 12) + '...' : material}
-                    <X className="w-3 h-3 ml-0.5" />
+                <motion.div key={`mat-${material}`} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+                  <Badge variant="secondary" className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors" onClick={() => onMaterialChange(material)}>
+                    <Layers className="w-3 h-3" />{getCategoryDisplayName(material, language)}<X className="w-3 h-3 ml-0.5" />
                   </Badge>
                 </motion.div>
               ))}
-              
               {(priceRange[0] > 0 || priceRange[1] < maxPrice) && (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                >
-                  <Badge
-                    variant="secondary"
-                    className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors"
-                    onClick={() => onPriceChange([0, maxPrice])}
-                  >
-                    <Euro className="w-3 h-3" />
-                    €{priceRange[0]} - €{priceRange[1]}
-                    <X className="w-3 h-3 ml-0.5" />
+                <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
+                  <Badge variant="secondary" className="gap-1.5 pr-1.5 cursor-pointer hover:bg-destructive/10 transition-colors" onClick={() => onPriceChange([0, maxPrice])}>
+                    <Euro className="w-3 h-3" />€{priceRange[0]} - €{priceRange[1]}<X className="w-3 h-3 ml-0.5" />
                   </Badge>
                 </motion.div>
               )}
@@ -297,59 +187,30 @@ export function ProductFilters({
         )}
       </AnimatePresence>
 
-      {/* Accordion Filters */}
-      <Accordion type="multiple" defaultValue={defaultOpenSections} className="space-y-2">
-        {/* Categories */}
+      <Accordion type="multiple" defaultValue={['categories', 'colors']} className="space-y-2">
         <AccordionItem value="categories" className="border rounded-xl px-4 bg-card/50">
           <AccordionTrigger className="py-4 hover:no-underline">
-            <div className="flex items-center gap-3">
-              <Box className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-sm">{t('filter.categories')}</span>
-              {activeFilterCounts.categories > 0 && (
-                <Badge variant="default" className="h-5 px-1.5 text-xs">
-                  {activeFilterCounts.categories}
-                </Badge>
-              )}
+            <div className="flex items-center gap-3"><Box className="w-4 h-4 text-primary" /><span className="font-semibold text-sm">{t('filter.categories')}</span>
+              {activeFilterCounts.categories > 0 && <Badge variant="default" className="h-5 px-1.5 text-xs">{activeFilterCounts.categories}</Badge>}
             </div>
           </AccordionTrigger>
           <AccordionContent className="pb-4">
             <div className="space-y-2.5">
               {tagCategories.map((category) => (
-                <label
-                  key={category.id}
-                  className={cn(
-                    'flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all',
-                    'hover:bg-accent/50',
-                    selectedCategories.includes(category.slug) && 'bg-primary/5 ring-1 ring-primary/20'
-                  )}
-                >
-                  <Checkbox
-                    id={category.slug}
-                    checked={selectedCategories.includes(category.slug)}
-                    onCheckedChange={() => onCategoryChange(category.slug)}
-                    className="rounded-md"
-                  />
+                <label key={category.id} className={cn('flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all', 'hover:bg-accent/50', selectedCategories.includes(category.slug) && 'bg-primary/5 ring-1 ring-primary/20')}>
+                  <Checkbox id={category.slug} checked={selectedCategories.includes(category.slug)} onCheckedChange={() => onCategoryChange(category.slug)} className="rounded-md" />
                   <span className="text-sm flex-1">{language === 'el' ? category.name : category.nameEn}</span>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                    {category.dynamicCount}
-                  </span>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{category.dynamicCount}</span>
                 </label>
               ))}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Colors with Visual Swatches */}
         <AccordionItem value="colors" className="border rounded-xl px-4 bg-card/50">
           <AccordionTrigger className="py-4 hover:no-underline">
-            <div className="flex items-center gap-3">
-              <Palette className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-sm">{t('filter.color')}</span>
-              {activeFilterCounts.colors > 0 && (
-                <Badge variant="default" className="h-5 px-1.5 text-xs">
-                  {activeFilterCounts.colors}
-                </Badge>
-              )}
+            <div className="flex items-center gap-3"><Palette className="w-4 h-4 text-primary" /><span className="font-semibold text-sm">{t('filter.color')}</span>
+              {activeFilterCounts.colors > 0 && <Badge variant="default" className="h-5 px-1.5 text-xs">{activeFilterCounts.colors}</Badge>}
             </div>
           </AccordionTrigger>
           <AccordionContent className="pb-4">
@@ -358,60 +219,14 @@ export function ProductFilters({
                 const isSelected = selectedColors.includes(color.value);
                 const isGradient = color.display.pattern === 'gradient';
                 const isTexture = color.display.pattern === 'texture';
-                
                 return (
-                  <button
-                    key={color.value}
-                    onClick={() => onColorChange(color.value)}
-                    className={cn(
-                      'flex items-center gap-2.5 p-2.5 rounded-lg transition-all text-left',
-                      'hover:bg-accent/50 group',
-                      isSelected && 'bg-primary/5 ring-1 ring-primary/20'
-                    )}
-                  >
-                    {/* Color Swatch */}
+                  <button key={color.value} onClick={() => onColorChange(color.value)} className={cn('flex items-center gap-2.5 p-2.5 rounded-lg transition-all text-left', 'hover:bg-accent/50 group', isSelected && 'bg-primary/5 ring-1 ring-primary/20')}>
                     <div className="relative">
-                      <div
-                        className={cn(
-                          'w-7 h-7 rounded-full border-2 transition-all shadow-sm',
-                          isSelected ? 'border-primary scale-110' : 'border-border/50 group-hover:border-border',
-                          isTexture && 'ring-2 ring-inset ring-border/30'
-                        )}
-                        style={{
-                          background: isGradient ? color.display.hex : color.display.hex,
-                          ...(isTexture && {
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23999' fill-opacity='0.15'%3E%3Cpath d='M5 0h1L0 5V0h5zM6 5v1H5L0 0h1l5 5z'/%3E%3C/g%3E%3C/svg%3E")`,
-                          }),
-                        }}
-                      >
-                        {isSelected && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute inset-0 flex items-center justify-center"
-                          >
-                            <Check
-                              className={cn(
-                                'w-3.5 h-3.5',
-                                color.display.hex === '#FFFFFF' || color.display.hex === '#F5F5F5' || color.display.hex === '#FAFAFA'
-                                  ? 'text-foreground'
-                                  : 'text-white'
-                              )}
-                              strokeWidth={3}
-                            />
-                          </motion.div>
-                        )}
+                      <div className={cn('w-7 h-7 rounded-full border-2 transition-all shadow-sm', isSelected ? 'border-primary scale-110' : 'border-border/50 group-hover:border-border', isTexture && 'ring-2 ring-inset ring-border/30')} style={{ background: isGradient ? color.display.hex : color.display.hex, ...(isTexture && { backgroundImage: `url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23999' fill-opacity='0.15'%3E%3Cpath d='M5 0h1L0 5V0h5zM6 5v1H5L0 0h1l5 5z'/%3E%3C/g%3E%3C/svg%3E")` }) }}>
+                        {isSelected && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute inset-0 flex items-center justify-center"><Check className={cn('w-3.5 h-3.5', color.display.hex === '#FFFFFF' || color.display.hex === '#F5F5F5' || color.display.hex === '#FAFAFA' ? 'text-foreground' : 'text-white')} strokeWidth={3} /></motion.div>}
                       </div>
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <span className="text-xs font-medium truncate block">
-                        {color.display.label}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {color.count} {t('products.results')}
-                      </span>
-                    </div>
+                    <div className="flex-1 min-w-0"><span className="text-xs font-medium truncate block">{color.display.label}</span><span className="text-[10px] text-muted-foreground">{color.count} {t('products.results')}</span></div>
                   </button>
                 );
               })}
@@ -419,121 +234,51 @@ export function ProductFilters({
           </AccordionContent>
         </AccordionItem>
 
-        {/* Materials - NOW SHOWS ALL */}
         <AccordionItem value="materials" className="border rounded-xl px-4 bg-card/50">
           <AccordionTrigger className="py-4 hover:no-underline">
-            <div className="flex items-center gap-3">
-              <Layers className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-sm">{t('filter.material')}</span>
-              {activeFilterCounts.materials > 0 && (
-                <Badge variant="default" className="h-5 px-1.5 text-xs">
-                  {activeFilterCounts.materials}
-                </Badge>
-              )}
+            <div className="flex items-center gap-3"><Layers className="w-4 h-4 text-primary" /><span className="font-semibold text-sm">{t('filter.material')}</span>
+              {activeFilterCounts.materials > 0 && <Badge variant="default" className="h-5 px-1.5 text-xs">{activeFilterCounts.materials}</Badge>}
             </div>
           </AccordionTrigger>
           <AccordionContent className="pb-4">
-            <div className="space-y-2 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
+            <div className="space-y-2 max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
               {materialOptions.map((material) => (
-                <label
-                  key={material.value}
-                  className={cn(
-                    'flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all',
-                    'hover:bg-accent/50',
-                    selectedMaterials.includes(material.value) && 'bg-primary/5 ring-1 ring-primary/20'
-                  )}
-                >
-                  <Checkbox
-                    checked={selectedMaterials.includes(material.value)}
-                    onCheckedChange={() => onMaterialChange(material.value)}
-                    className="rounded-md"
-                  />
-                  <span className="text-sm flex-1 truncate" title={material.value}>
-                    {material.label}
-                  </span>
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                    {material.count}
-                  </span>
+                <label key={material.category} className={cn('flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all', 'hover:bg-accent/50', selectedMaterials.includes(material.category) && 'bg-primary/5 ring-1 ring-primary/20')}>
+                  <Checkbox checked={selectedMaterials.includes(material.category)} onCheckedChange={() => onMaterialChange(material.category)} className="rounded-md" />
+                  <span className="text-sm flex-1 truncate" title={material.category}>{language === 'el' ? material.displayName : material.displayNameEn}</span>
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{material.count}</span>
                 </label>
               ))}
             </div>
           </AccordionContent>
         </AccordionItem>
 
-        {/* Price Range */}
         <AccordionItem value="price" className="border rounded-xl px-4 bg-card/50">
           <AccordionTrigger className="py-4 hover:no-underline">
-            <div className="flex items-center gap-3">
-              <Euro className="w-4 h-4 text-primary" />
-              <span className="font-semibold text-sm">{t('filter.price')}</span>
-              {activeFilterCounts.price > 0 && (
-                <Badge variant="default" className="h-5 px-1.5 text-xs">
-                  1
-                </Badge>
-              )}
+            <div className="flex items-center gap-3"><Euro className="w-4 h-4 text-primary" /><span className="font-semibold text-sm">{t('filter.price')}</span>
+              {activeFilterCounts.price > 0 && <Badge variant="default" className="h-5 px-1.5 text-xs">1</Badge>}
             </div>
           </AccordionTrigger>
           <AccordionContent className="pb-4">
             <div className="space-y-6 pt-2">
-              <Slider
-                value={priceRange}
-                onValueChange={onPriceChange}
-                min={0}
-                max={maxPrice}
-                step={50}
-                className="cursor-pointer"
-              />
+              <Slider value={priceRange} onValueChange={onPriceChange} min={0} max={maxPrice} step={50} className="cursor-pointer" />
               <div className="flex items-center justify-between gap-4">
-                <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-1 block">{language === 'el' ? 'Από' : 'From'}</Label>
-                  <div className="px-3 py-2 rounded-lg bg-muted font-medium text-sm">
-                    €{priceRange[0].toLocaleString()}
-                  </div>
-                </div>
+                <div className="flex-1"><Label className="text-xs text-muted-foreground mb-1 block">{language === 'el' ? 'Από' : 'From'}</Label><div className="px-3 py-2 rounded-lg bg-muted font-medium text-sm">€{priceRange[0].toLocaleString()}</div></div>
                 <div className="text-muted-foreground pt-5">—</div>
-                <div className="flex-1">
-                  <Label className="text-xs text-muted-foreground mb-1 block">{language === 'el' ? 'Έως' : 'To'}</Label>
-                  <div className="px-3 py-2 rounded-lg bg-muted font-medium text-sm">
-                    €{priceRange[1].toLocaleString()}
-                  </div>
-                </div>
+                <div className="flex-1"><Label className="text-xs text-muted-foreground mb-1 block">{language === 'el' ? 'Έως' : 'To'}</Label><div className="px-3 py-2 rounded-lg bg-muted font-medium text-sm">€{priceRange[1].toLocaleString()}</div></div>
               </div>
-              
-              {/* Quick price buttons */}
               <div className="flex flex-wrap gap-2">
-                {[500, 1000, 1500, 2000].map((price) => (
-                  <Button
-                    key={price}
-                    variant={priceRange[1] === price && priceRange[0] === 0 ? 'default' : 'outline'}
-                    size="sm"
-                    className="h-7 text-xs rounded-full"
-                    onClick={() => onPriceChange([0, price])}
-                  >
-                    {language === 'el' ? `Έως €${price}` : `Up to €${price}`}
-                  </Button>
-                ))}
+                {[500, 1000, 1500, 2000].map((price) => (<Button key={price} variant={priceRange[1] === price && priceRange[0] === 0 ? 'default' : 'outline'} size="sm" className="h-7 text-xs rounded-full" onClick={() => onPriceChange([0, price])}>{language === 'el' ? `Έως €${price}` : `Up to €${price}`}</Button>))}
               </div>
             </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
-      {/* Clear All Button */}
       <AnimatePresence>
         {hasFilters && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-          >
-            <Button
-              variant="outline"
-              onClick={onClearFilters}
-              className="w-full rounded-xl h-11 mt-4"
-            >
-              <X className="w-4 h-4 mr-2" />
-              {language === 'el' ? 'Καθαρισμός Όλων των Φίλτρων' : 'Clear All Filters'}
-            </Button>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}>
+            <Button variant="outline" onClick={onClearFilters} className="w-full rounded-xl h-11 mt-4"><X className="w-4 h-4 mr-2" />{language === 'el' ? 'Καθαρισμός Όλων των Φίλτρων' : 'Clear All Filters'}</Button>
           </motion.div>
         )}
       </AnimatePresence>
