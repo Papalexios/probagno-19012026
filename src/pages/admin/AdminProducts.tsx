@@ -590,7 +590,7 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
       category: formData.category || 'cabinet',
       subcategory: formData.subcategory,
       basePrice: formData.basePrice || 0,
-      salePrice: formData.salePrice,
+      salePrice: formData.salePrice ?? null,
       images: formData.images || [],
       dimensions: formData.dimensions || [],
       materials: formData.materials || [],
