@@ -40,7 +40,7 @@ export default function ProductsPage() {
       result = result.filter((p) => searchProduct(p, search));
     }
     if (selectedCategories.length > 0 && !selectedCategories.includes('all')) {
-      result = result.filter((p) => p.tags?.some((tag) => selectedCategories.includes(tag)));
+      result = result.filter((p) => selectedCategories.includes(p.category) || p.tags?.some((tag) => selectedCategories.includes(tag)));
     }
     return result;
   }, [products, search, selectedCategories]);
