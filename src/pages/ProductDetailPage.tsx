@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
@@ -58,14 +58,7 @@ export default function ProductDetailPage() {
   const productDescription = language === 'en' && product.descriptionEn ? product.descriptionEn : product.description;
   const selectedDimension = product.dimensions.find((d) => d.id === selectedDimensionId) || product.dimensions[0];
 
-    // SOTA: Filter out invalid dimensions (0x0x0 with price 0)
-  const validDimensions = useMemo(() => {
-    if (!product) return [];
-    return product.dimensions.filter(
-      (dim) => dim.width > 0 || dim.height > 0 || dim.depth > 0 || dim.price > 0
-    );
-  }, [product]);
-  const displayPrice = product.salePrice || selectedDimension?.price || 0;
+  const displayPrice = product.salePrice || selectedDimension.price;
   const hasDiscount = product.salePrice && product.salePrice < product.basePrice;
 
   const handleAddToCart = () => {
@@ -183,11 +176,11 @@ export default function ProductDetailPage() {
               <p className="text-muted-foreground">{productDescription}</p>
 
               {/* Dimensions Selector */}
-              {validDimensions.length > 1 && (
+              {product.dimensions.length > 1 && (
               <div>                <h3 className="font-medium mb-3">{t('product.selectDimensions')}</h3>
                 <RadioGroup value={selectedDimensionId} onValueChange={setSelectedDimensionId}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {validDimensions.map((dim) => (
+                    {product.dimensions.map((dim) => (
                       <div key={dim.id}>
                         <RadioGroupItem value={dim.id} id={dim.id} className="peer sr-only" />
                         <Label
