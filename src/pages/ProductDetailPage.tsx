@@ -56,6 +56,9 @@ export default function ProductDetailPage() {
 
   const productName = language === 'en' && product.nameEn ? product.nameEn : product.name;
   const productDescription = language === 'en' && product.descriptionEn ? product.descriptionEn : product.description;
+    const productColors = language === 'en' && product.colorsEn?.length ? product.colorsEn : product.colors;
+  const productMaterials = language === 'en' && product.materialsEn?.length ? product.materialsEn : product.materials;
+  const productFeatures = language === 'en' && product.featuresEn?.length ? product.featuresEn : product.features;
   const selectedDimension = product.dimensions.find((d) => d.id === selectedDimensionId) || product.dimensions[0];
 
     // Filter out dimensions with 0x0x0 values (meaningless dimensions)
@@ -212,11 +215,11 @@ export default function ProductDetailPage() {
                             )}
 
               {/* Colors */}
-              {product.colors.length > 0 && (
+              {productColors.length > 0 && (
                 <div>
                   <h3 className="font-medium mb-3">{t('product.availableColors')}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {product.colors.map((color) => (
+                    {productColoproductColors.maprs.length((color) => (
                       <span key={color} className="px-3 py-1.5 bg-muted rounded-full text-sm">
                         {color}
                       </span>
@@ -297,7 +300,7 @@ export default function ProductDetailPage() {
               </TabsList>
               <TabsContent value="features" className="pt-6">
                 <ul className="grid sm:grid-cols-2 gap-3">
-                  {product.features.map((feature, i) => (
+                  {productFeatures.map((feature, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-primary flex-shrink-0" />
                       {feature}
@@ -307,7 +310,7 @@ export default function ProductDetailPage() {
               </TabsContent>
               <TabsContent value="materials" className="pt-6">
                 <div className="flex flex-wrap gap-3">
-                  {product.materials.map((material, i) => (
+                  {productMaterials.map((material, i) => (
                     <span key={i} className="px-4 py-2 bg-muted rounded-lg">{material}</span>
                   ))}
                 </div>
