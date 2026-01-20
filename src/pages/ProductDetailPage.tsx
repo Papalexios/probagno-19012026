@@ -24,6 +24,7 @@ export default function ProductDetailPage() {
 
   const [selectedDimensionId, setSelectedDimensionId] = useState('');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [selectedColorVariantId, setSelectedColorVariantId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
 
   // Set initial dimension when product loads
@@ -65,6 +66,10 @@ export default function ProductDetailPage() {
     const validDimensions = product.dimensions.filter(
           (d) => d.width !== 0 || d.height !== 0 || d.depth !== 0
               );
+
+    // Get the selected color variant and its image
+  const selectedColorVariant = product.colorVariants?.find((v) => v.id === selectedColorVariantId);
+  const displayImageUrl = selectedColorVariant?.image || product.images[selectedImageIndex]?.url || product.images[0]?.url;
 
   const displayPrice = product.salePrice || selectedDimension.price;
   const hasDiscount = product.salePrice && product.salePrice < product.basePrice;
@@ -115,7 +120,7 @@ export default function ProductDetailPage() {
             >
               <div className="aspect-square rounded-lg overflow-hidden bg-muted">
                 <img
-                  src={product.images[selectedImageIndex]?.url || product.images[0]?.url}
+                  src={displayImageUrl}
                   alt={productName}
                   className="w-full h-full object-cover"
                 />
@@ -214,19 +219,48 @@ export default function ProductDetailPage() {
               </div>
                             )}
 
-              {/* Colors */}
-              {productColors.length > 0 && (
-                <div>
-                  <h3 className="font-medium mb-3">{t('product.availableColors')}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {productColoproductColors.maprs.length((color) => (
+              {/* Colors - supports color variants with images */}
+            {(product.colorVariants?.length || productColors.length > 0) && (
+              <div>
+                <h3 className="font-medium mb-3">{t('product.availableColors')}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {/* Color variants with images (clickable) */}
+                  {product.colorVariants && product.colorVariants.length > 0 ? (
+                    product.colorVariants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => {
+                          setSelectedColorVariantId(variant.id);
+                          setSelectedImageIndex(0); // Reset image index when selecting color
+                        }}
+                        className={cn(
+                          'px-3 py-1.5 rounded-full text-sm transition-all border-2',
+                          selectedColorVariantId === variant.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-transparent bg-muted hover:border-primary/50',
+                          variant.colorHex && 'flex items-center gap-2'
+                        )}
+                      >
+                        {variant.colorHex && (
+                          <span
+                            className="w-4 h-4 rounded-full border border-border"
+                            style={{ backgroundColor: variant.colorHex }}
+                          />
+                        )}
+                        {language === 'en' && variant.colorEn ? variant.colorEn : variant.color}
+                      </button>
+                    ))
+                  ) : (
+                    /* Fallback: Simple color names (non-clickable) */
+                    productColors.map((color) => (
                       <span key={color} className="px-3 py-1.5 bg-muted rounded-full text-sm">
                         {color}
                       </span>
-                    ))}
-                  </div>
+                    ))
+                  )}
                 </div>
-              )}
+              </div>
+            )}
 
               {/* Quantity & Add to Cart */}
               <div className="flex items-center gap-4 pt-4" style={{ display: 'none' }}>
