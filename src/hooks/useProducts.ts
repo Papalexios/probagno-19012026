@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Product, Category, ProductImage, ProductDimension } from '@/types/product';
+import { Product, Category, ProductImage, ProductDimension, ColorVariant } from '@/types/product';
 import { useEffect } from 'react';
 import { products as initialProducts, categories as initialCategories } from '@/data/products';
 
@@ -22,6 +22,7 @@ interface DbProduct {
   materials: string[];
   colors: string[];
   features: string[];
+    color_variants?: { id: string; color: string; colorEn?: string; colorHex?: string; image?: string }[];
   in_stock: boolean;
   featured: boolean;
   best_seller: boolean;
@@ -59,6 +60,7 @@ const toAppProduct = (db: DbProduct): Product => ({
   materials: db.materials,
   colors: db.colors,
   features: db.features,
+    colorVariants: (db.color_variants || []) as ColorVariant[],
   inStock: db.in_stock,
   featured: db.featured,
   bestSeller: db.best_seller,
@@ -95,6 +97,7 @@ const toDbProduct = (product: Product): Omit<DbProduct, 'created_at' | 'updated_
   materials: product.materials,
   colors: product.colors,
   features: product.features,
+    color_variants: product.colorVariants || null,
   in_stock: product.inStock,
   featured: product.featured,
   best_seller: product.bestSeller,
@@ -270,6 +273,7 @@ export function useUpdateProduct() {
       if (updates.materials !== undefined) dbUpdates.materials = updates.materials;
       if (updates.colors !== undefined) dbUpdates.colors = updates.colors;
       if (updates.features !== undefined) dbUpdates.features = updates.features;
+            if (updates.colorVariants !== undefined) dbUpdates.color_variants = updates.colorVariants;
       if (updates.inStock !== undefined) dbUpdates.in_stock = updates.inStock;
       if (updates.featured !== undefined) dbUpdates.featured = updates.featured;
       if (updates.bestSeller !== undefined) dbUpdates.best_seller = updates.bestSeller;
