@@ -864,8 +864,11 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
                       </div>
                     )}
                   </div>
-                  <div className="flex items-end">nd">
-                    size="sm"
+              <div className="flex items-end"> 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => {
                       const newVariants = (formData.colorVariants || []).filter((_, i) => i !== index);
