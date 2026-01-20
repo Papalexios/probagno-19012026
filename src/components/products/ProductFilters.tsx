@@ -119,22 +119,25 @@ export function ProductFilters({
       .sort((a, b) => b.count - a.count);
   }, [products]);
 
+  // Dynamic categories from database
   const tagCategories = useMemo(() => {
-    const tagDefs = [
-      { slug: 'all', name: 'Probagno', nameEn: 'Probagno' },
-      { slug: 'Καθρέπτης LED', name: 'Καθρέπτης LED', nameEn: 'LED Mirror' },
-      { slug: 'Καθρέπτης με ντουλάπι', name: 'Καθρέπτης με ντουλάπι', nameEn: 'Mirror Cabinet' },
-      { slug: 'Κολώνα μπάνιου', name: 'Κολώνα μπάνιου', nameEn: 'Bathroom Column' },
-      { slug: 'Μεταλλική βάση', name: 'Μεταλλική βάση', nameEn: 'Metal Base' },
-      { slug: 'Ντουλάπι', name: 'Ντουλάπι', nameEn: 'Cabinet' },
-      { slug: 'Συρτάρι', name: 'Συρτάρι', nameEn: 'Drawer' },
-    ];
-    return tagDefs.map((tag) => ({
-      ...tag,
-      id: tag.slug,
-      dynamicCount: tag.slug === 'all' ? products.length : products.filter((p) => p.tags?.includes(tag.slug)).length,
+    // Add "all" category at the beginning
+    const allCategory = {
+      id: 'all',
+      slug: 'all',
+      name: 'Probagno',
+      nameEn: 'Probagno',
+      dynamicCount: products.length,
+    };
+
+    // Map database categories with product counts
+    const dbCategories = categories.map((cat) => ({
+      ...cat,
+      dynamicCount: products.filter((p) => p.category === cat.slug || p.tags?.includes(cat.slug)).length,
     }));
-  }, [products]);
+
+    return [allCategory, ...dbCategories];
+  }, [products, categories]);
 
   const activeFilterCounts = {
     categories: selectedCategories.length,
