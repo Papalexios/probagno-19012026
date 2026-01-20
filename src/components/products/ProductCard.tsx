@@ -129,20 +129,6 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
 
           {/* Quick Actions - Desktop */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 30 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-4 left-4 right-4 hidden sm:flex gap-2"
-          >
-            <Button
-              size="sm"
-              className="flex-1 gap-2 rounded-xl h-11 shadow-lg"
-              onClick={handleQuickAdd}
-            >
-              <ShoppingBag className="w-4 h-4" />
-              {language === 'el' ? 'Προσθήκη' : 'Add'}
-            </Button>
             <Button size="sm" variant="secondary" className="px-3 rounded-xl h-11 shadow-lg bg-background/90 backdrop-blur-sm">
               <Eye className="w-4 h-4" />
             </Button>
@@ -151,13 +137,6 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </Button>
           </motion.div>
 
-          {/* Mobile Quick Add */}
-          <button
-            onClick={handleQuickAdd}
-            className="sm:hidden absolute bottom-3 right-3 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-          >
-            <ShoppingBag className="w-4 h-4" />
-          </button>
         </div>
 
         {/* Content */}
