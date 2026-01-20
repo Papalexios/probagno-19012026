@@ -505,6 +505,9 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
     materials: [] as string[],
     colors: [] as string[],
     features: [] as string[],
+        materialsEn: [] as string[],
+    colorsEn: [] as string[],
+    featuresEn: [] as string[],
     inStock: true,
     featured: false,
     bestSeller: false,
@@ -524,6 +527,9 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
           materials: [...(product.materials || [])],
           colors: [...(product.colors || [])],
           features: [...(product.features || [])],
+                      materialsEn: [...(product.materialsEn || [])],
+            colorsEn: [...(product.colorsEn || [])],
+            featuresEn: [...(product.featuresEn || [])],
         });
       } else {
         setFormData(getDefaultFormData());
@@ -596,6 +602,9 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
       materials: formData.materials || [],
       colors: formData.colors || [],
       features: formData.features || [],
+            materialsEn: formData.materialsEn || [],
+      colorsEn: formData.colorsEn || [],
+      featuresEn: formData.featuresEn || [],
       inStock: formData.inStock ?? true,
       featured: formData.featured ?? false,
       bestSeller: formData.bestSeller ?? false,
@@ -669,6 +678,14 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
               rows={3}
             />
           </div>
+                    <div className="space-y-2">
+            <Label>Description (EN)</Label>
+            <Textarea
+              value={formData.descriptionEn || ''}
+              onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+              rows={3}
+            />
+          </div>
 
           {/* Image Upload Section */}
           <ImageUploadSection
@@ -684,12 +701,28 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
               placeholder="Oak Vanilla, White, Interior Grey"
             />
           </div>
+                    <div className="space-y-2">
+            <Label>Colors (EN) - comma separated</Label>
+            <Input
+              value={formData.colorsEn?.join(', ') || ''}
+              onChange={(e) => setFormData({ ...formData, colorsEn: e.target.value.split(',').map(c => c.trim()).filter(Boolean) })}
+              placeholder="Oak Vanilla, White, Interior Grey"
+            />
+          </div>
 
           <div className="space-y-2">
             <Label>Υλικά (διαχωρισμένα με κόμμα)</Label>
             <Input
               value={formData.materials?.join(', ') || ''}
               onChange={(e) => setFormData({ ...formData, materials: e.target.value.split(',').map(c => c.trim()).filter(Boolean) })}
+              placeholder="CDF Swiss Krono, Corian"
+            />
+          </div>
+                    <div className="space-y-2">
+            <Label>Materials (EN) - comma separated</Label>
+            <Input
+              value={formData.materialsEn?.join(', ') || ''}
+              onChange={(e) => setFormData({ ...formData, materialsEn: e.target.value.split(',').map(c => c.trim()).filter(Boolean) })}
               placeholder="CDF Swiss Krono, Corian"
             />
           </div>
@@ -700,9 +733,16 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
               value={formData.features?.join(', ') || ''}
               onChange={(e) => setFormData({ ...formData, features: e.target.value.split(',').map(c => c.trim()).filter(Boolean) })}
               placeholder="LED φωτισμός, Soft-close συρτάρια"
-            />
+                          />
           </div>
-
+                        <div className="space-y-2">
+            <Label>Features (EN) - comma separated</Label>
+            <Input
+              value={formData.featuresEn?.join(', ') || ''}
+              onChange={(e) => setFormData({ ...formData, featuresEn: e.target.value.split(',').map(c => c.trim()).filter(Boolean) })}
+              placeholder="LED lighting, Soft-close drawers"
+            />
+                                    </div>
           {/* Pricing */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
