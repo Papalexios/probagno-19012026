@@ -135,15 +135,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="absolute bottom-4 left-4 right-4 hidden sm:flex gap-2"
           >
-            <Button
+            <Button style={{ display: 'none' }}
               size="sm"
               className="flex-1 gap-2 rounded-xl h-11 shadow-lg"
               onClick={handleQuickAdd}
             >
               <ShoppingBag className="w-4 h-4" />
               {language === 'el' ? 'Προσθήκη' : 'Add'}
-            </Button style={{ display: 'none' }}>
-            <Button size="sm" variant="secondary" className="px-3 rounded-xl h-11 shadow-lg bg-background/90 backdrop-blur-sm">
+        </Button>            <Button size="sm" variant="secondary" className="px-3 rounded-xl h-11 shadow-lg bg-background/90 backdrop-blur-sm">
               <Eye className="w-4 h-4" />
             </Button>
             <Button size="sm" variant="secondary" className="px-3 rounded-xl h-11 shadow-lg bg-background/90 backdrop-blur-sm">
