@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Plus, Search, Edit, Trash2, Eye, MoreVertical, Package, Loader2, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { useProductsQuery, useCategoriesQuery, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { useAuth } from '@/contexts/AuthContext';
-import { Product, ProductImage } from '@/types/product';
+import { Product, ProductImage, ColorVariant } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -511,6 +511,7 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
     inStock: true,
     featured: false,
     bestSeller: false,
+        colorVariants: [] as { id: string; color: string; colorEn?: string; colorHex?: string; image?: string }[],
   });
   
   const [formData, setFormData] = useState<Partial<Product>>(getDefaultFormData());
@@ -530,6 +531,7 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
                       materialsEn: [...(product.materialsEn || [])],
             colorsEn: [...(product.colorsEn || [])],
             featuresEn: [...(product.featuresEn || [])],
+                      colorVariants: [...(product.colorVariants || [])],
         });
       } else {
         setFormData(getDefaultFormData());
@@ -605,6 +607,7 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
             materialsEn: formData.materialsEn || [],
       colorsEn: formData.colorsEn || [],
       featuresEn: formData.featuresEn || [],
+            colorVariants: formData.colorVariants || [],
       inStock: formData.inStock ?? true,
       featured: formData.featured ?? false,
       bestSeller: formData.bestSeller ?? false,
@@ -743,6 +746,99 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
               placeholder="LED lighting, Soft-close drawers"
             />
                                     </div>
+
+                    {/* Color Variants Section */}
+          <div className="space-y-4">
+            <Label>Παραλλαγές Χρώματος με Εικόνες</Label>
+            <p className="text-sm text-muted-foreground">Προσθέστε χρώματα με τις αντίστοιχες εικόνες τους</p>
+            {formData.colorVariants?.map((variant, index) => (
+              <div key={variant.id} className="grid grid-cols-5 gap-2 p-4 bg-muted rounded-lg">
+                <div>
+                  <Label className="text-xs">Χρώμα (GR)</Label>
+                  <Input
+                    value={variant.color}
+                    onChange={(e) => {
+                      const newVariants = [...(formData.colorVariants || [])];
+                      newVariants[index] = { ...variant, color: e.target.value };
+                      setFormData({ ...formData, colorVariants: newVariants });
+                    }}
+                    placeholder="Λευκό"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Color (EN)</Label>
+                  <Input
+                    value={variant.colorEn || ''}
+                    onChange={(e) => {
+                      const newVariants = [...(formData.colorVariants || [])];
+                      newVariants[index] = { ...variant, colorEn: e.target.value };
+                      setFormData({ ...formData, colorVariants: newVariants });
+                    }}
+                    placeholder="White"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Hex Code</Label>
+                  <Input
+                    value={variant.colorHex || ''}
+                    onChange={(e) => {
+                      const newVariants = [...(formData.colorVariants || [])];
+                      newVariants[index] = { ...variant, colorHex: e.target.value };
+                      setFormData({ ...formData, colorVariants: newVariants });
+                    }}
+                    placeholder="#FFFFFF"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Image URL</Label>
+                  <Input
+                    value={variant.image || ''}
+                    onChange={(e) => {
+                      const newVariants = [...(formData.colorVariants || [])];
+                      newVariants[index] = { ...variant, image: e.target.value };
+                      setFormData({ ...formData, colorVariants: newVariants });
+                    }}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      const newVariants = (formData.colorVariants || []).filter((_, i) => i !== index);
+                      setFormData({ ...formData, colorVariants: newVariants });
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newVariant = {
+                  id: `color-${Date.now()}`,
+                  color: '',
+                  colorEn: '',
+                  colorHex: '',
+                  image: '',
+                };
+                setFormData({
+                  ...formData,
+                  colorVariants: [...(formData.colorVariants || []), newVariant],
+                });
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Προσθήκη Χρώματος
+            </Button>
+          </div>
           {/* Pricing */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
