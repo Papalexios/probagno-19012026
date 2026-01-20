@@ -753,6 +753,10 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
             <p className="text-sm text-muted-foreground">Προσθέστε χρώματα με τις αντίστοιχες εικόνες τους</p>
             {formData.colorVariants?.map((variant, index) => (
                 <div key={variant.id} className="grid grid-cols-6 gap-2 p-4 bg-muted rounded-lg">
+                <div>
+                  <Label className="text-xs">Χρώμα (GR)</Label>
+                  <Input
+                    value={variant.color || ''}
                     onChange={(e) => {
                       const newVariants = [...(formData.colorVariants || [])];
                       newVariants[index] = { ...variant, color: e.target.value };
