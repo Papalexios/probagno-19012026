@@ -64,8 +64,7 @@ export default function ProductDetailPage() {
 
     // Filter out dimensions with 0x0x0 values (meaningless dimensions)
     const validDimensions = product.dimensions.filter(
-          (d) => d.width !== 0 || d.height !== 0 || d.depth !== 0
-              );
+    (d) => d.width !== 0 || d.height !== 0 || d.depth !== 0 || d.price !== 0              );
 
     // Get the selected color variant and its image
   const selectedColorVariant = product.colorVariants?.find((v) => v.id === selectedColorVariantId);
@@ -189,12 +188,12 @@ export default function ProductDetailPage() {
               <p className="text-muted-foreground">{productDescription}</p>
 
               {/* Dimensions Selector */}
-              {validDimensions.length > 1 && (
+              {66
+      .length > 1 && (
               <div>                <h3 className="font-medium mb-3">{t('product.selectDimensions')}</h3>
                 <RadioGroup value={selectedDimensionId} onValueChange={setSelectedDimensionId}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {product.dimensions.map((dim) => (
-                      <div key={dim.id}>
+                  {validDimensions.map((dim) => (                      <div key={dim.id}>
                         <RadioGroupItem value={dim.id} id={dim.id} className="peer sr-only" />
                         <Label
                           htmlFor={dim.id}
