@@ -128,25 +128,7 @@ export default function AdminLayout() {
             })}
           </nav>
 
-          {/* Seed Database Button (admin only) */}
-          {isAdmin && (
-            <div className="px-4 pb-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2"
-                onClick={handleSeedDatabase}
-                disabled={seedProducts.isPending}
-              >
-                {seedProducts.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Database className="w-4 h-4" />
-                )}
-                Sync Products to DB
-              </Button>
-            </div>
-          )}
-
+          
           {/* Footer */}
           <div className="p-4 border-t border-border">
             <div className="px-4 py-2 mb-2">
