@@ -307,6 +307,5 @@ export default function ProductDetailPage() {
           )}
         </section>
       </Layout>
-    </>
   );
 }
