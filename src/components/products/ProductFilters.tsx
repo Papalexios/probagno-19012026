@@ -56,6 +56,7 @@ const getColorDisplay = (colorName: string) => {
 
 interface ProductFiltersProps {
   products: Product[];
+    allProducts: Product[];
   categories: Category[];
   selectedCategories: string[];
   selectedColors: string[];
@@ -72,6 +73,7 @@ interface ProductFiltersProps {
 
 export function ProductFilters({
   products,
+    allProducts,
   categories,
   selectedCategories,
   selectedColors,
@@ -127,17 +129,22 @@ export function ProductFilters({
       slug: 'all',
       name: 'Probagno',
       nameEn: 'Probagno',
-      dynamicCount: products.length,
+      dynamicCount: allProducts.length,
     };
 
-    // Map database categories with product counts
-    const dbCategories = categories.map((cat) => ({
-      ...cat,
-      dynamicCount: products.filter((p) => p.category === cat.slug || p.tags?.includes(cat.slug)).length,
-    }));
+    // Filter out redundant categories like 'Probagno (all)'
+    const filteredCategories = categories.filter(
+      (cat) => cat.slug !== 'all' && !cat.name.includes('(all)')
+    );
 
+    // Map database categories with product counts
+    const dbCategories = filteredCategories.map((cat) => ({
+      ...cat,
+      dynamicCount: allProducts.filter((p) => p.category === cat.slug || p.tags?.includes(cat.slug)).length,
+    }));
+    
     return [allCategory, ...dbCategories];
-  }, [products, categories]);
+  }, [allProducts, categories]);
 
   const activeFilterCounts = {
     categories: selectedCategories.length,
