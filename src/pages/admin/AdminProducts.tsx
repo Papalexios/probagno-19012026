@@ -731,7 +731,7 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
           <div className="space-y-4">
             <Label>Διαστάσεις & Παραλλαγές</Label>
             {formData.dimensions?.map((dim, index) => (
-              <div key={dim.id} className="grid grid-cols-5 gap-2 p-4 bg-muted rounded-lg">
+              <div key={dim.id} className="grid grid-cols-6 gap-2 p-4 bg-muted rounded-lg">
                 <div>
                   <Label className="text-xs">Πλάτος (cm)</Label>
                   <Input
@@ -791,6 +791,23 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
                     }}
                   />
                 </div>
+                                {/* Delete Button */}
+                {(formData.dimensions?.length || 0) > 1 && (
+                  <div className="flex items-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        const newDims = (formData.dimensions || []).filter((_, i) => i !== index);
+                        setFormData({ ...formData, dimensions: newDims });
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
             <Button
