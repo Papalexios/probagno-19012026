@@ -752,11 +752,7 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
             <Label>Παραλλαγές Χρώματος με Εικόνες</Label>
             <p className="text-sm text-muted-foreground">Προσθέστε χρώματα με τις αντίστοιχες εικόνες τους</p>
             {formData.colorVariants?.map((variant, index) => (
-              <div key={variant.id} className="grid grid-cols-5 gap-2 p-4 bg-muted rounded-lg">
-                <div>
-                  <Label className="text-xs">Χρώμα (GR)</Label>
-                  <Input
-                    value={variant.color}
+                <div key={variant.id} className="grid grid-cols-6 gap-2 p-4 bg-muted rounded-lg">
                     onChange={(e) => {
                       const newVariants = [...(formData.colorVariants || [])];
                       newVariants[index] = { ...variant, color: e.target.value };
@@ -789,22 +785,86 @@ function ProductEditDialog({ product, categories, open, onClose, onSave, isLoadi
                     placeholder="#FFFFFF"
                   />
                 </div>
-                <div>
-                  <Label className="text-xs">Image URL</Label>
-                  <Input
-                    value={variant.image || ''}
-                    onChange={(e) => {
-                      const newVariants = [...(formData.colorVariants || [])];
-                      newVariants[index] = { ...variant, image: e.target.value };
-                      setFormData({ ...formData, colorVariants: newVariants });
-                    }}
-                    placeholder="https://..."
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    type="button"
-                    variant="ghost"
+                  <div className="col-span-2">
+                    <Label className="text-xs">Εικόνα Χρώματος</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input
+                        value={variant.image || ''}
+                        onChange={(e) => {
+                          const newVariants = [...(formData.colorVariants || [])];
+                          newVariants[index] = { ...variant, image: e.target.value };
+                          setFormData({ ...formData, colorVariants: newVariants });
+                        }}
+                        placeholder="https://... ή ανεβάστε αρχείο"
+                        className="flex-1"
+                      />
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            if (!file.type.startsWith('image/')) {
+                              toast.error('Το αρχείο δεν είναι εικόνα');
+                              return;
+                            }
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast.error('Το αρχείο είναι πολύ μεγάλο (max 5MB)');
+                              return;
+                            }
+                            try {
+                              const fileExt = file.name.split('.').pop();
+                              const fileName = `${crypto.randomUUID()}.${fileExt}`;
+                              const filePath = `products/colors/${fileName}`;
+                              const { error } = await supabase.storage
+                                .from('product-images')
+                                .upload(filePath, file);
+                              if (error) throw error;
+                              const { data: publicUrlData } = supabase.storage
+                                .from('product-images')
+                                .getPublicUrl(filePath);
+                              const newVariants = [...(formData.colorVariants || [])];
+                              newVariants[index] = { ...variant, image: publicUrlData.publicUrl };
+                              setFormData({ ...formData, colorVariants: newVariants });
+                              toast.success('Η εικόνα ανέβηκε επιτυχώς');
+                            } catch (err) {
+                              console.error('Upload error:', err);
+                              toast.error('Σφάλμα κατά το upload');
+                            }
+                            e.target.value = '';
+                          }}
+                        />
+                        <Button type="button" variant="outline" size="sm">
+                          <Upload className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    {variant.image && (
+                      <div className="mt-2 relative w-16 h-16">
+                        <img
+                          src={variant.image}
+                          alt={variant.color}
+                          className="w-full h-full object-cover rounded"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute -top-2 -right-2 w-6 h-6 p-0 bg-destructive text-white rounded-full hover:bg-destructive/90"
+                          onClick={() => {
+                            const newVariants = [...(formData.colorVariants || [])];
+                            newVariants[index] = { ...variant, image: '' };
+                            setFormData({ ...formData, colorVariants: newVariants });
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-end">nd">
                     size="sm"
                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => {
